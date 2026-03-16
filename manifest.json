@@ -1,0 +1,18 @@
+{
+  "name": "NetserGroup Dashboard",
+  "short_name": "NetserGroup",
+  "description": "Dashboard Operacional NetserGroup - Monitoreo en Tiempo Real",
+  "start_url": "./widget.html",
+  "display": "standalone",
+  "background_color": "#060E1A",
+  "theme_color": "#060E1A",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%230D1B2A'/><circle cx='256' cy='230' r='100' fill='%230077B6'/><ellipse cx='256' cy='230' rx='130' ry='50' fill='none' stroke='%2300B4D8' stroke-width='6' opacity='0.6' transform='rotate(-20 256 230)'/><ellipse cx='256' cy='230' rx='110' ry='35' fill='none' stroke='%2348CAE4' stroke-width='5' opacity='0.5' transform='rotate(75 256 230)'/><text x='256' y='420' text-anchor='middle' font-family='Arial' font-size='70' font-weight='bold' fill='white'>NETSER</text><text x='256' y='470' text-anchor='middle' font-family='Arial' font-size='40' fill='%2348CAE4'>GROUP</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
