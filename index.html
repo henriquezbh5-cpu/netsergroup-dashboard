@@ -120,6 +120,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 .kpi-mini.warning .kpi-value{color:var(--warn)}
 .kpi-label{font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.8px}
 .kpi-sub{font-size:10px;color:var(--t4);margin-top:2px}
+.kpi-sparkline{position:absolute;bottom:0;left:0;right:0;height:30px;opacity:.2}
 
 /* ====== SECTION HEADERS ====== */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin:28px 0 16px}
@@ -227,7 +228,7 @@ td:last-child{border-radius:0 var(--radius-sm) var(--radius-sm) 0;text-align:cen
 .bot-health{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
 .bot-gauge{position:relative;width:200px;height:200px}
 .bot-gauge-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
-.bot-gauge-value{font-size:36px;font-weight:900;color:#00B894}
+.bot-gauge-value{font-size:36px;font-weight:900;color:var(--ok)}
 .bot-gauge-label{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px}
 .bot-stats{display:flex;gap:24px;margin-top:20px}
 .bot-stat{text-align:center}
@@ -290,6 +291,11 @@ footer .footer-brand{color:var(--a3);font-weight:600}
   .client-value{font-size:28px}
 }
 
+/* ====== LOADING SKELETON ====== */
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.skeleton{background:linear-gradient(90deg,var(--glass) 25%,var(--glass2) 50%,var(--glass) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius-xs)}
+
 /* ====== TOOLTIP ====== */
 .tooltip{position:relative}
 .tooltip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;
@@ -297,6 +303,9 @@ footer .footer-brand{color:var(--a3);font-weight:600}
   border:1px solid var(--brd);border-radius:var(--radius-xs);font-size:10px;color:var(--t2);
   white-space:nowrap;opacity:0;pointer-events:none;transition:all .2s;z-index:50}
 .tooltip:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ====== CONFETTI / CELEBRATION ====== */
+.celebrate{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1000}
 </style>
 </head>
 <body>
@@ -355,7 +364,7 @@ footer .footer-brand{color:var(--a3);font-weight:600}
 
 <!-- ====== KPI STRIP ====== -->
 <div class="kpi-strip" data-aos="fade-up" data-aos-delay="100">
-  <div class="kpi-mini success tooltip" data-tip="Bots funcionando correctamente">
+  <div class="kpi-mini success tooltip" data-tip="Todos los bots funcionando correctamente">
     <div class="kpi-icon"><i data-lucide="bot"></i></div>
     <div class="kpi-data">
       <div class="kpi-value counter" data-target="14">0</div>
@@ -363,7 +372,7 @@ footer .footer-brand{color:var(--a3);font-weight:600}
       <div class="kpi-sub">14 / 14 activos</div>
     </div>
   </div>
-  <div class="kpi-mini danger tooltip" data-tip="Bots con errores">
+  <div class="kpi-mini danger tooltip" data-tip="Sin bots con errores">
     <div class="kpi-icon"><i data-lucide="alert-triangle"></i></div>
     <div class="kpi-data">
       <div class="kpi-value counter" data-target="0">0</div>
@@ -398,55 +407,58 @@ footer .footer-brand{color:var(--a3);font-weight:600}
   <span class="section-badge">9 clientes</span>
 </div>
 <div class="clients-grid">
-<div class="client-card active" data-aos="zoom-in" data-aos-delay="50">
+  <div class="client-card active" data-aos="zoom-in" data-aos-delay="50">
     <div class="client-icon">&#128295;</div>
     <div class="client-value counter" data-target="18">0</div>
-    <div class="client-name">CTDI</div><div class="client-pct">82%</div>
+    <div class="client-name">CTDI</div>
+    <div class="client-pct">82%</div>
     <div class="client-bar"><div class="client-bar-fill" data-width="82"></div></div>
   </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="100">
+  <div class="client-card" data-aos="zoom-in" data-aos-delay="100">
     <div class="client-icon">&#128187;</div>
     <div class="client-value counter" data-target="3">0</div>
-    <div class="client-name">Lenovo</div><div class="client-pct">14%</div>
+    <div class="client-name">Lenovo</div>
+    <div class="client-pct">14%</div>
     <div class="client-bar"><div class="client-bar-fill" data-width="14"></div></div>
   </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="150">
+  <div class="client-card" data-aos="zoom-in" data-aos-delay="150">
     <div class="client-icon">&#128424;</div>
     <div class="client-value counter" data-target="1">0</div>
-    <div class="client-name">HPE</div><div class="client-pct">5%</div>
+    <div class="client-name">HPE</div>
+    <div class="client-pct">5%</div>
     <div class="client-bar"><div class="client-bar-fill" data-width="5"></div></div>
   </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="200">
+  <div class="client-card" data-aos="zoom-in" data-aos-delay="200">
     <div class="client-icon">&#128424;</div>
     <div class="client-value zero counter" data-target="0">0</div>
     <div class="client-name">HP Comercial</div>
     <div class="client-bar"><div class="client-bar-fill" data-width="0"></div></div>
   </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="250">
+  <div class="client-card" data-aos="zoom-in" data-aos-delay="250">
     <div class="client-icon">&#128722;</div>
     <div class="client-value zero counter" data-target="0">0</div>
     <div class="client-name">Payless</div>
     <div class="client-bar"><div class="client-bar-fill" data-width="0"></div></div>
   </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="300">
+  <div class="client-card" data-aos="zoom-in" data-aos-delay="300">
     <div class="client-icon">&#9729;</div>
     <div class="client-value zero counter" data-target="0">0</div>
     <div class="client-name">Netapp</div>
     <div class="client-bar"><div class="client-bar-fill" data-width="0"></div></div>
   </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="350">
+  <div class="client-card" data-aos="zoom-in" data-aos-delay="350">
     <div class="client-icon">&#128424;</div>
     <div class="client-value zero counter" data-target="0">0</div>
     <div class="client-name">Lexmark</div>
     <div class="client-bar"><div class="client-bar-fill" data-width="0"></div></div>
   </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="400">
+  <div class="client-card" data-aos="zoom-in" data-aos-delay="400">
     <div class="client-icon">&#128424;</div>
     <div class="client-value zero counter" data-target="0">0</div>
     <div class="client-name">Lexmark Kit</div>
     <div class="client-bar"><div class="client-bar-fill" data-width="0"></div></div>
   </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="450">
+  <div class="client-card" data-aos="zoom-in" data-aos-delay="450">
     <div class="client-icon">&#128178;</div>
     <div class="client-value zero counter" data-target="0">0</div>
     <div class="client-name">Monthly Fee</div>
@@ -513,20 +525,20 @@ footer .footer-brand{color:var(--a3);font-weight:600}
     <table>
       <thead><tr><th>Bot / Flujo</th><th>Estado</th></tr></thead>
       <tbody id="botTable">
-<tr><td>BackUp Mobility</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Cierre POs</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Cierre Alpha</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Cierre HPCM</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Tasas Cambio</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Encuestas Dell</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Respaldo Invoice</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Cierre Residencias</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Receiving Lab</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Reporte Inv HP</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>HPCM Cenam</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>HPCM Chile</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Licencias FSM</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Regularizacion Mobility</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>BackUp Mobility</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>Cierre POs</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>Cierre Alpha</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>Cierre HPCM</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>Tasas Cambio</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>Encuestas Dell</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>Respaldo Invoice</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>Cierre Residencias</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>Receiving Lab</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>Reporte Inv HP</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>HPCM Cenam</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>HPCM Chile</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>Licencias FSM</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
+        <tr><td>Regularizacion Mobility</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -598,11 +610,11 @@ footer .footer-brand{color:var(--a3);font-weight:600}
 </div>
 
 <footer>
-  <p>Ultima Actualizacion: <span id="footerTime">17/03/2026 11:53:46</span> &mdash;
+  <p>Ultima Actualizacion: <span id="footerTime">17/03/2026 09:01:40</span> &mdash;
   <span class="footer-brand">NetserGroup</span> &copy; 2026 &mdash; Humberto Henriquez</p>
 </footer>
 
-</div>
+</div><!-- .dashboard -->
 
 <script>
 // ====== INITIALIZE LUCIDE ICONS ======
@@ -621,14 +633,16 @@ function updateClock() {
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
   document.getElementById('liveClock').textContent =
-    pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 }
 setInterval(updateClock, 1000);
 updateClock();
 
 // ====== NAVBAR SCROLL EFFECT ======
+let lastScroll = 0;
 window.addEventListener('scroll', () => {
-  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40);
+  const navbar = document.getElementById('navbar');
+  navbar.classList.toggle('scrolled', window.scrollY > 40);
 });
 
 // ====== PARTICLE NETWORK (ENHANCED) ======
@@ -652,31 +666,45 @@ for (let i = 0; i < 65; i++) {
 function drawParticles() {
   cx.clearRect(0, 0, cv.width, cv.height);
   particles.forEach((p, i) => {
+    // Mouse interaction - gentle attraction
     const dmx = mouseX - p.x, dmy = mouseY - p.y;
     const dm = Math.hypot(dmx, dmy);
-    if (dm < 200) { p.vx += dmx * 0.00003; p.vy += dmy * 0.00003; }
+    if (dm < 200) {
+      p.vx += dmx * 0.00003;
+      p.vy += dmy * 0.00003;
+    }
     p.vx *= 0.999; p.vy *= 0.999;
     p.x += p.vx; p.y += p.vy;
     if (p.x < 0) p.x = cv.width; if (p.x > cv.width) p.x = 0;
     if (p.y < 0) p.y = cv.height; if (p.y > cv.height) p.y = 0;
+
+    // Glow effect
     const grad = cx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3);
-    grad.addColorStop(0, 'hsla(' + p.hue + ',80%,60%,' + p.o + ')');
-    grad.addColorStop(1, 'hsla(' + p.hue + ',80%,60%,0)');
+    grad.addColorStop(0, `hsla(${p.hue},80%,60%,${p.o})`);
+    grad.addColorStop(1, `hsla(${p.hue},80%,60%,0)`);
     cx.fillStyle = grad;
     cx.beginPath(); cx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2); cx.fill();
-    cx.fillStyle = 'hsla(' + p.hue + ',80%,70%,' + (p.o + .1) + ')';
+
+    // Core dot
+    cx.fillStyle = `hsla(${p.hue},80%,70%,${p.o + .1})`;
     cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, Math.PI * 2); cx.fill();
+
+    // Connection lines
     particles.forEach((q, j) => {
       if (j <= i) return;
       const d = Math.hypot(p.x - q.x, p.y - q.y);
       if (d < 140) {
-        cx.strokeStyle = 'hsla(195,80%,50%,' + (0.06 * (1 - d / 140)) + ')';
+        const alpha = 0.06 * (1 - d / 140);
+        cx.strokeStyle = `hsla(195,80%,50%,${alpha})`;
         cx.lineWidth = .6;
         cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(q.x, q.y); cx.stroke();
       }
     });
+
+    // Mouse connection lines
     if (dm < 200) {
-      cx.strokeStyle = 'hsla(195,80%,60%,' + (0.08 * (1 - dm / 200)) + ')';
+      const alpha = 0.08 * (1 - dm / 200);
+      cx.strokeStyle = `hsla(195,80%,60%,${alpha})`;
       cx.lineWidth = .8;
       cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(mouseX, mouseY); cx.stroke();
     }
@@ -693,13 +721,20 @@ function animateCounters() {
     const target = parseInt(el.dataset.target) || 0;
     if (el._animated) return;
     el._animated = true;
+
     gsap.fromTo(el, { innerText: 0 }, {
       innerText: target,
       duration: target > 50 ? 2 : 1.2,
       ease: 'power2.out',
       snap: { innerText: 1 },
-      scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' },
-      onUpdate: function() { el.textContent = Math.round(this.targets()[0].innerText); }
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 85%',
+        toggleActions: 'play none none none'
+      },
+      onUpdate: function() {
+        el.textContent = Math.round(this.targets()[0].innerText);
+      }
     });
   });
 }
@@ -710,23 +745,26 @@ ScrollTrigger.create({
   trigger: '#mainRing',
   start: 'top 80%',
   onEnter: () => {
-    var pct = 22 / Math.max(22, 30);
-    var circumference = 2 * Math.PI * 90;
+    // 22 out of ~30 possible (for visual effect)
+    const pct = 22 / 30;
+    const circumference = 2 * Math.PI * 90;
     document.getElementById('mainRing').style.strokeDashoffset = circumference * (1 - pct);
   }
 });
 
-// ====== CLIENT CARDS 3D TILT + MOUSE GLOW ======
+// ====== CLIENT CARDS — 3D TILT + MOUSE GLOW ======
 document.querySelectorAll('.client-card').forEach(card => {
   card.addEventListener('mousemove', e => {
     const rect = card.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
-    card.style.setProperty('--mx', (x * 100) + '%');
-    card.style.setProperty('--my', (y * 100) + '%');
-    card.style.transform = 'perspective(800px) rotateX(' + ((y - .5) * -12) + 'deg) rotateY(' + ((x - .5) * 12) + 'deg) translateY(-8px) scale(1.02)';
+    card.style.setProperty('--mx', `${x * 100}%`);
+    card.style.setProperty('--my', `${y * 100}%`);
+    card.style.transform = `perspective(800px) rotateX(${(y - .5) * -12}deg) rotateY(${(x - .5) * 12}deg) translateY(-8px) scale(1.02)`;
   });
-  card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+  });
   card.addEventListener('click', () => {
     document.querySelectorAll('.client-card').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
@@ -752,7 +790,7 @@ document.getElementById('botSearch').addEventListener('input', function() {
   });
 });
 
-// ====== TABLE ROW STAGGER ======
+// ====== TABLE ROW STAGGER ANIMATION ======
 gsap.utils.toArray('#botTable tr').forEach((row, i) => {
   gsap.from(row, {
     opacity: 0, x: -30,
@@ -767,31 +805,30 @@ Chart.register(ChartDataLabels);
 Chart.defaults.color = '#5A7A9A';
 Chart.defaults.font.family = 'Inter';
 
+// Gradient helper
 function createGradient(ctx, colors) {
-  var gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+  const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
   gradient.addColorStop(0, colors[0]);
   gradient.addColorStop(1, colors[1]);
   return gradient;
 }
 
-var barCtx = document.getElementById('barC').getContext('2d');
-var barColors = [['#0D47A1','#1976D2'],['#1565C0','#2196F3'],['#1976D2','#42A5F5'],
-  ['#1E88E5','#64B5F6'],['#2196F3','#90CAF9'],['#1A237E','#3F51B5'],
-  ['#283593','#5C6BC0'],['#303F9F','#7986CB'],['#3949AB','#9FA8DA']];
-var barBg = [];
-for (var bi = 0; bi < 3; bi++) {
-  barBg.push(createGradient(barCtx, barColors[bi] || barColors[0]));
-}
-
+// Bar chart
+const barCtx = document.getElementById('barC').getContext('2d');
 new Chart(barCtx, {
   type: 'bar',
   data: {
-    labels: ["CTDI", "Lenovo", "HPE"],
+    labels: ['CTDI', 'Lenovo', 'HPE'],
     datasets: [{
       data: [18, 3, 1],
-      backgroundColor: barBg,
-      borderColor: ['#1E88E5','#42A5F5','#64B5F6','#90CAF9','#BBDEFB','#5C6BC0','#7986CB','#9FA8DA','#C5CAE9'].slice(0, 3),
-      borderWidth: 2, borderRadius: 10, borderSkipped: false
+      backgroundColor: [
+        createGradient(barCtx, ['#0D47A1', '#1976D2']),
+        createGradient(barCtx, ['#1565C0', '#2196F3']),
+        createGradient(barCtx, ['#1976D2', '#42A5F5'])
+      ],
+      borderColor: ['#1E88E5', '#42A5F5', '#64B5F6'],
+      borderWidth: 2, borderRadius: 10, borderSkipped: false,
+      hoverBackgroundColor: ['#1565C0', '#1976D2', '#2196F3']
     }]
   },
   options: {
@@ -799,28 +836,38 @@ new Chart(barCtx, {
     animation: { duration: 1800, easing: 'easeOutQuart', delay: ctx => ctx.dataIndex * 200 },
     plugins: {
       legend: { display: false },
-      datalabels: { anchor: 'end', align: 'top', color: '#D1D9E6', font: { weight: 700, size: 14 },
-        formatter: v => v > 0 ? v : '' },
-      tooltip: { backgroundColor: 'rgba(6,14,26,.95)', borderColor: '#1E3A5F',
-        borderWidth: 1, cornerRadius: 12, padding: 14, titleFont: { weight: 700 },
-        callbacks: { label: ctx => ctx.parsed.y + ' casos (' + Math.round(ctx.parsed.y / 22 * 100) + '%)' } }
+      datalabels: {
+        anchor: 'end', align: 'top', color: '#D1D9E6',
+        font: { weight: 700, size: 14 },
+        formatter: v => v > 0 ? v : ''
+      },
+      tooltip: {
+        backgroundColor: 'rgba(6,14,26,.95)', borderColor: '#1E3A5F',
+        borderWidth: 1, cornerRadius: 12, padding: 14,
+        titleFont: { weight: 700 },
+        callbacks: {
+          label: ctx => `${ctx.parsed.y} casos (${Math.round(ctx.parsed.y / 22 * 100)}%)`
+        }
+      }
     },
     scales: {
       x: { grid: { display: false }, ticks: { font: { size: 11, weight: 600 } } },
       y: { grid: { color: 'rgba(30,58,95,.2)', drawBorder: false }, beginAtZero: true,
         ticks: { stepSize: 5, font: { size: 10 } } }
-    }
+    },
+    onHover: (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; }
   },
   plugins: [ChartDataLabels]
 });
 
+// Doughnut
 new Chart(document.getElementById('doC'), {
   type: 'doughnut',
   data: {
-    labels: ["CTDI", "Lenovo", "HPE"],
+    labels: ['CTDI', 'Lenovo', 'HPE'],
     datasets: [{
       data: [18, 3, 1],
-      backgroundColor: ['#0D47A1','#1565C0','#1976D2','#1E88E5','#2196F3','#1A237E','#283593','#303F9F','#3949AB'].slice(0, 3),
+      backgroundColor: ['#0D47A1', '#1565C0', '#1976D2'],
       borderColor: '#0A1628', borderWidth: 4, hoverOffset: 20,
       hoverBorderColor: '#48CAE4', hoverBorderWidth: 3
     }]
@@ -829,40 +876,56 @@ new Chart(document.getElementById('doC'), {
     responsive: true, maintainAspectRatio: false, cutout: '65%',
     animation: { animateRotate: true, duration: 2200, easing: 'easeOutQuart' },
     plugins: {
-      legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10,
-          font: { size: 11, weight: 500 }, color: '#94A3B8' } },
-      datalabels: { color: '#E2E8F0', font: { weight: 700, size: 14 },
+      legend: {
+        position: 'bottom',
+        labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10,
+          font: { size: 11, weight: 500 }, color: '#94A3B8' }
+      },
+      datalabels: {
+        color: '#E2E8F0', font: { weight: 700, size: 14 },
         formatter: (v, ctx) => {
           const s = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
           return s > 0 ? Math.round(v / s * 100) + '%' : '';
-        }, anchor: 'center', align: 'center' },
-      tooltip: { backgroundColor: 'rgba(6,14,26,.95)', borderColor: '#1E3A5F',
+        },
+        anchor: 'center', align: 'center'
+      },
+      tooltip: {
+        backgroundColor: 'rgba(6,14,26,.95)', borderColor: '#1E3A5F',
         borderWidth: 1, cornerRadius: 12, padding: 14,
-        callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.parsed + ' casos' } }
+        callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} casos` }
+      }
     }
   },
   plugins: [ChartDataLabels]
 });
 
+// Bot donut with animated segments
 new Chart(document.getElementById('botD'), {
   type: 'doughnut',
   data: {
     labels: ['Exitosos', 'Fallidos'],
-    datasets: [{ data: [14, 0],
+    datasets: [{
+      data: [14, 0],
       backgroundColor: ['rgba(0,184,148,.85)', 'rgba(225,112,85,.85)'],
-      borderWidth: 0, hoverOffset: 10 }]
+      borderWidth: 0, hoverOffset: 10
+    }]
   },
   options: {
     responsive: true, maintainAspectRatio: false, cutout: '75%',
     animation: { animateRotate: true, duration: 2000, easing: 'easeOutQuart' },
-    plugins: { legend: { display: false }, datalabels: { display: false },
-      tooltip: { backgroundColor: 'rgba(6,14,26,.95)', borderColor: '#1E3A5F',
-        borderWidth: 1, cornerRadius: 12, padding: 14 } }
+    plugins: {
+      legend: { display: false },
+      datalabels: { display: false },
+      tooltip: {
+        backgroundColor: 'rgba(6,14,26,.95)', borderColor: '#1E3A5F',
+        borderWidth: 1, cornerRadius: 12, padding: 14
+      }
+    }
   }
 });
 
 // ====== THEME TOGGLE ======
-var darkMode = true;
+let darkMode = true;
 document.getElementById('themeToggle').addEventListener('click', () => {
   darkMode = !darkMode;
   const root = document.documentElement;
@@ -897,19 +960,24 @@ document.getElementById('themeToggle').addEventListener('click', () => {
     document.getElementById('pc').style.opacity = '.3';
     document.querySelector('.ambient').style.opacity = '1';
   }
+  // Swap icon
   const btn = document.getElementById('themeToggle');
-  btn.innerHTML = darkMode ? '<i data-lucide="sun"><\/i>' : '<i data-lucide="moon"><\/i>';
+  btn.innerHTML = darkMode ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
   lucide.createIcons();
   gsap.fromTo(btn, { rotation: 0 }, { rotation: 360, duration: .5, ease: 'power2.out' });
 });
 
-// ====== KPI CARD HOVER ======
+// ====== KPI CARD HOVER — GSAP ======
 document.querySelectorAll('.kpi-mini, .op-kpi').forEach(card => {
-  card.addEventListener('mouseenter', () => { gsap.to(card, { scale: 1.03, duration: .3, ease: 'power2.out' }); });
-  card.addEventListener('mouseleave', () => { gsap.to(card, { scale: 1, y: 0, duration: .3, ease: 'power2.out' }); });
+  card.addEventListener('mouseenter', () => {
+    gsap.to(card, { scale: 1.03, duration: .3, ease: 'power2.out' });
+  });
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, { scale: 1, y: 0, duration: .3, ease: 'power2.out' });
+  });
 });
 
-// ====== ENTRANCE ANIMATION ======
+// ====== ENTRANCE ANIMATION — GSAP TIMELINE ======
 const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 tl.from('.navbar', { y: -60, opacity: 0, duration: .8 })
   .from('.kpi-strip', { y: 40, opacity: 0, duration: .6 }, '-=.4');
@@ -919,8 +987,7 @@ function updateFooter() {
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
   document.getElementById('footerTime').textContent =
-    pad(now.getDate()) + '/' + pad(now.getMonth() + 1) + '/' + now.getFullYear() + ' ' +
-    pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 }
 setInterval(updateFooter, 1000);
 </script>
