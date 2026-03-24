@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NetserGroup Dashboard</title>
+<meta name="description" content="Dashboard Operacional NetserGroup - Monitoreo en Tiempo Real">
+<meta name="theme-color" content="#060E1A">
+<link rel="manifest" href="manifest.json">
 <!-- Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
@@ -120,6 +123,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 .kpi-mini.warning .kpi-value{color:var(--warn)}
 .kpi-label{font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.8px}
 .kpi-sub{font-size:10px;color:var(--t4);margin-top:2px}
+.kpi-change{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;margin-left:6px}
+.kpi-change.up{color:#00B894;background:rgba(0,184,148,.1)}
+.kpi-change.down{color:#E17055;background:rgba(225,112,85,.1)}
+.kpi-change.neutral{color:var(--t4);background:rgba(61,90,128,.15)}
 
 /* ====== SECTION HEADERS ====== */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin:28px 0 16px}
@@ -147,6 +154,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 .client-card:hover::after{opacity:1}
 .client-card.active{border-color:var(--a);background:linear-gradient(145deg,rgba(13,40,71,.7),rgba(22,52,86,.7))}
 .client-card.active::before{transform:scaleX(1);background:linear-gradient(90deg,var(--a),var(--a3))}
+.client-card.zero-card{opacity:.55}
+.client-card.zero-card:hover{opacity:.85}
 .client-icon{font-size:24px;margin-bottom:8px;opacity:.6;transition:var(--transition)}
 .client-card:hover .client-icon{opacity:1;transform:scale(1.3) rotate(-5deg)}
 .client-value{font-size:38px;font-weight:800;line-height:1;margin-bottom:6px;
@@ -155,6 +164,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 .client-name{font-size:11px;color:#7B8DA6;font-weight:600;letter-spacing:.3px}
 .client-pct{position:absolute;top:10px;right:12px;font-size:10px;color:var(--t3);font-weight:700;
   padding:2px 8px;background:rgba(0,180,216,.06);border-radius:20px}
+.client-change{font-size:10px;font-weight:700;margin-top:4px;display:inline-flex;align-items:center;gap:2px;
+  padding:1px 7px;border-radius:10px}
+.client-change.up{color:#00B894;background:rgba(0,184,148,.12)}
+.client-change.down{color:#E17055;background:rgba(225,112,85,.12)}
+.client-change.same{color:var(--t4);background:rgba(61,90,128,.1)}
 .client-bar{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(30,58,95,.3)}
 .client-bar-fill{height:100%;border-radius:0 0 var(--radius) var(--radius);
   background:linear-gradient(90deg,var(--a2),var(--a3));
@@ -193,6 +207,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 
 /* ====== CHART CONTAINER ====== */
 .chart-wrap{position:relative;width:100%;height:270px}
+.chart-wrap-lg{position:relative;width:100%;height:380px}
 
 /* ====== TABLE ====== */
 .table-container{overflow:hidden}
@@ -268,11 +283,28 @@ td:last-child{border-radius:0 var(--radius-sm) var(--radius-sm) 0;text-align:cen
 .widget-btn:hover::before{left:100%}
 .widget-btn i{width:18px;height:18px}
 
+/* ====== HISTORY LEGEND ====== */
+.history-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;justify-content:center}
+.legend-item{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+  background:var(--glass);border:1px solid var(--brd);border-radius:20px;cursor:pointer;
+  font-size:10px;font-weight:600;color:var(--t2);transition:var(--transition);user-select:none}
+.legend-item:hover{border-color:var(--a);background:rgba(0,180,216,.06)}
+.legend-item.hidden{opacity:.35;text-decoration:line-through}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
 /* ====== FOOTER ====== */
 footer{margin-top:36px;text-align:center;padding:20px;
   border-top:1px solid rgba(30,58,95,.5)}
 footer p{font-size:11px;color:var(--t4)}
 footer .footer-brand{color:var(--a3);font-weight:600}
+
+/* ====== TOOLTIP ====== */
+.tooltip{position:relative}
+.tooltip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;
+  transform:translateX(-50%) translateY(4px);padding:6px 12px;background:rgba(6,14,26,.95);
+  border:1px solid var(--brd);border-radius:var(--radius-xs);font-size:10px;color:var(--t2);
+  white-space:nowrap;opacity:0;pointer-events:none;transition:all .2s;z-index:50}
+.tooltip:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ====== RESPONSIVE ====== */
 @media(max-width:1100px){
@@ -288,15 +320,18 @@ footer .footer-brand{color:var(--a3);font-weight:600}
   .nav-title h1{font-size:16px}
   .kpi-value{font-size:24px}
   .client-value{font-size:28px}
+  .chart-wrap-lg{height:260px}
 }
 
-/* ====== TOOLTIP ====== */
-.tooltip{position:relative}
-.tooltip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;
-  transform:translateX(-50%) translateY(4px);padding:6px 12px;background:rgba(6,14,26,.95);
-  border:1px solid var(--brd);border-radius:var(--radius-xs);font-size:10px;color:var(--t2);
-  white-space:nowrap;opacity:0;pointer-events:none;transition:all .2s;z-index:50}
-.tooltip:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ====== LIGHT THEME ====== */
+body.light{
+  --bg:#F0F4F8;--bg2:#E2E8F0;--bg3:#CBD5E1;--bg-card:rgba(255,255,255,.75);
+  --brd:#D1D9E6;--t1:#1E293B;--t2:#334155;--t3:#64748B;--t4:#94A3B8;
+  --glass:rgba(0,0,0,.02);--glass2:rgba(0,0,0,.04);
+  background:#F0F4F8;
+}
+body.light #pc{opacity:.08}
+body.light .ambient{opacity:.3}
 </style>
 </head>
 <body>
@@ -354,40 +389,7 @@ footer .footer-brand{color:var(--a3);font-weight:600}
 </nav>
 
 <!-- ====== KPI STRIP ====== -->
-<div class="kpi-strip" data-aos="fade-up" data-aos-delay="100">
-  <div class="kpi-mini success tooltip" data-tip="Bots funcionando correctamente">
-    <div class="kpi-icon"><i data-lucide="bot"></i></div>
-    <div class="kpi-data">
-      <div class="kpi-value counter" data-target="14">0</div>
-      <div class="kpi-label">Bots OK</div>
-      <div class="kpi-sub">14 / 14 activos</div>
-    </div>
-  </div>
-  <div class="kpi-mini danger tooltip" data-tip="Bots con errores">
-    <div class="kpi-icon"><i data-lucide="alert-triangle"></i></div>
-    <div class="kpi-data">
-      <div class="kpi-value counter" data-target="0">0</div>
-      <div class="kpi-label">Bots Fail</div>
-      <div class="kpi-sub">0 errores detectados</div>
-    </div>
-  </div>
-  <div class="kpi-mini warning tooltip" data-tip="Alertas del sistema">
-    <div class="kpi-icon"><i data-lucide="bell"></i></div>
-    <div class="kpi-data">
-      <div class="kpi-value counter" data-target="0">0</div>
-      <div class="kpi-label">Alertas</div>
-      <div class="kpi-sub">Sin alertas pendientes</div>
-    </div>
-  </div>
-  <div class="kpi-mini info tooltip" data-tip="Total de casos activos hoy">
-    <div class="kpi-icon"><i data-lucide="briefcase"></i></div>
-    <div class="kpi-data">
-      <div class="kpi-value counter" data-target="38">0</div>
-      <div class="kpi-label">Casos Activos</div>
-      <div class="kpi-sub">4 clientes activos</div>
-    </div>
-  </div>
-</div>
+<div class="kpi-strip" id="kpiStrip" data-aos="fade-up" data-aos-delay="100"></div>
 
 <!-- ====== CLIENTS ====== -->
 <div class="section-header" data-aos="fade-right" data-aos-delay="50">
@@ -395,64 +397,9 @@ footer .footer-brand{color:var(--a3);font-weight:600}
     <div class="section-bar"></div>
     <h2>Casos por Cliente</h2>
   </div>
-  <span class="section-badge">9 clientes</span>
+  <span class="section-badge" id="clientsBadge"></span>
 </div>
-<div class="clients-grid">
-<div class="client-card active" data-aos="zoom-in" data-aos-delay="50">
-    <div class="client-icon">&#128295;</div>
-    <div class="client-value counter" data-target="34">0</div>
-    <div class="client-name">CTDI</div><div class="client-pct">89%</div>
-    <div class="client-bar"><div class="client-bar-fill" data-width="89"></div></div>
-  </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="100">
-    <div class="client-icon">&#128187;</div>
-    <div class="client-value counter" data-target="2">0</div>
-    <div class="client-name">Lenovo</div><div class="client-pct">5%</div>
-    <div class="client-bar"><div class="client-bar-fill" data-width="5"></div></div>
-  </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="150">
-    <div class="client-icon">&#128424;</div>
-    <div class="client-value counter" data-target="1">0</div>
-    <div class="client-name">HPE</div><div class="client-pct">3%</div>
-    <div class="client-bar"><div class="client-bar-fill" data-width="3"></div></div>
-  </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="200">
-    <div class="client-icon">&#128424;</div>
-    <div class="client-value counter" data-target="1">0</div>
-    <div class="client-name">Lexmark</div><div class="client-pct">3%</div>
-    <div class="client-bar"><div class="client-bar-fill" data-width="3"></div></div>
-  </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="250">
-    <div class="client-icon">&#128424;</div>
-    <div class="client-value zero counter" data-target="0">0</div>
-    <div class="client-name">HP Comercial</div>
-    <div class="client-bar"><div class="client-bar-fill" data-width="0"></div></div>
-  </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="300">
-    <div class="client-icon">&#128722;</div>
-    <div class="client-value zero counter" data-target="0">0</div>
-    <div class="client-name">Payless</div>
-    <div class="client-bar"><div class="client-bar-fill" data-width="0"></div></div>
-  </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="350">
-    <div class="client-icon">&#9729;</div>
-    <div class="client-value zero counter" data-target="0">0</div>
-    <div class="client-name">Netapp</div>
-    <div class="client-bar"><div class="client-bar-fill" data-width="0"></div></div>
-  </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="400">
-    <div class="client-icon">&#128424;</div>
-    <div class="client-value zero counter" data-target="0">0</div>
-    <div class="client-name">Lexmark Kit</div>
-    <div class="client-bar"><div class="client-bar-fill" data-width="0"></div></div>
-  </div>
-<div class="client-card" data-aos="zoom-in" data-aos-delay="450">
-    <div class="client-icon">&#128178;</div>
-    <div class="client-value zero counter" data-target="0">0</div>
-    <div class="client-name">Monthly Fee</div>
-    <div class="client-bar"><div class="client-bar-fill" data-width="0"></div></div>
-  </div>
-</div>
+<div class="clients-grid" id="clientsGrid"></div>
 
 <!-- ====== RESUMEN GENERAL ====== -->
 <div class="section-header" data-aos="fade-right">
@@ -462,7 +409,7 @@ footer .footer-brand{color:var(--a3);font-weight:600}
   </div>
   <span class="section-badge">Vista consolidada</span>
 </div>
-<div class="grid-3">
+<div class="grid-3" id="resumenGrid">
   <div class="panel" data-aos="fade-up" data-aos-delay="100">
     <div class="ring-container" style="position:relative">
       <div class="ring-glow"></div>
@@ -477,10 +424,10 @@ footer .footer-brand{color:var(--a3);font-weight:600}
         <circle class="ring-progress" id="mainRing" cx="100" cy="100" r="90"/>
       </svg>
       <div class="ring-center">
-        <div class="ring-value counter" data-target="38">0</div>
+        <div class="ring-value counter" id="ringValue" data-target="0">0</div>
         <div class="ring-label">casos activos</div>
       </div>
-      <div class="ring-sub">4 clientes activos de 9</div>
+      <div class="ring-sub" id="ringSub"></div>
     </div>
   </div>
   <div class="panel" data-aos="fade-up" data-aos-delay="200">
@@ -493,13 +440,27 @@ footer .footer-brand{color:var(--a3);font-weight:600}
   </div>
 </div>
 
+<!-- ====== HISTORICAL TREND ====== -->
+<div class="section-header" data-aos="fade-right">
+  <div class="section-left">
+    <div class="section-bar"></div>
+    <h2>Tendencia Historica</h2>
+  </div>
+  <span class="section-badge" id="historyBadge"></span>
+</div>
+<div class="panel" data-aos="fade-up" data-aos-delay="100" style="margin-bottom:8px">
+  <div class="panel-title"><i data-lucide="trending-up"></i> Evolucion de Casos por Cliente</div>
+  <div class="history-legend" id="historyLegend"></div>
+  <div class="chart-wrap-lg"><canvas id="trendC"></canvas></div>
+</div>
+
 <!-- ====== BOTS ====== -->
 <div class="section-header" data-aos="fade-right">
   <div class="section-left">
     <div class="section-bar"></div>
     <h2>Estado de Bots / Flujos</h2>
   </div>
-  <span class="section-badge">14 flujos monitoreados</span>
+  <span class="section-badge" id="botsBadge"></span>
 </div>
 <div class="grid-2">
   <div class="panel table-container" data-aos="fade-up" data-aos-delay="100">
@@ -512,22 +473,7 @@ footer .footer-brand{color:var(--a3);font-weight:600}
     </div>
     <table>
       <thead><tr><th>Bot / Flujo</th><th>Estado</th></tr></thead>
-      <tbody id="botTable">
-<tr><td>BackUp Mobility</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Cierre POs</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Cierre Alpha</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Cierre HPCM</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Tasas Cambio</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Encuestas Dell</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Respaldo Invoice</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Cierre Residencias</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Receiving Lab</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Reporte Inv HP</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>HPCM Cenam</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>HPCM Chile</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Licencias FSM</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-<tr><td>Regularizacion Mobility</td><td><span class="status-ok"><i data-lucide="check-circle"></i> OK</span></td></tr>
-      </tbody>
+      <tbody id="botTable"></tbody>
     </table>
   </div>
   <div class="panel" data-aos="fade-up" data-aos-delay="200" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
@@ -535,24 +481,11 @@ footer .footer-brand{color:var(--a3);font-weight:600}
     <div class="bot-gauge">
       <canvas id="botD"></canvas>
       <div class="bot-gauge-center">
-        <div class="bot-gauge-value">100%</div>
+        <div class="bot-gauge-value" id="botGaugeValue">0%</div>
         <div class="bot-gauge-label">Tasa Exito</div>
       </div>
     </div>
-    <div class="bot-stats">
-      <div class="bot-stat">
-        <div class="bot-stat-value" style="color:var(--ok)">14</div>
-        <div class="bot-stat-label">Exitosos</div>
-      </div>
-      <div class="bot-stat">
-        <div class="bot-stat-value" style="color:var(--fail)">0</div>
-        <div class="bot-stat-label">Fallidos</div>
-      </div>
-      <div class="bot-stat">
-        <div class="bot-stat-value" style="color:var(--a)">0</div>
-        <div class="bot-stat-label">Alertas</div>
-      </div>
-    </div>
+    <div class="bot-stats" id="botStats"></div>
   </div>
 </div>
 
@@ -563,32 +496,7 @@ footer .footer-brand{color:var(--a3);font-weight:600}
     <h2>Resumen Operacional</h2>
   </div>
 </div>
-<div class="grid-4">
-  <div class="op-kpi s" data-aos="flip-up" data-aos-delay="100">
-    <div class="op-icon"><i data-lucide="check-circle" style="color:var(--ok)"></i></div>
-    <div class="op-value counter" data-target="14">0</div>
-    <div class="op-label">Exitosos</div>
-    <div class="op-sub">14 / 14 bots</div>
-  </div>
-  <div class="op-kpi f" data-aos="flip-up" data-aos-delay="200">
-    <div class="op-icon"><i data-lucide="x-circle" style="color:var(--fail)"></i></div>
-    <div class="op-value counter" data-target="0">0</div>
-    <div class="op-label">Fallidos</div>
-    <div class="op-sub">0 / 14 bots</div>
-  </div>
-  <div class="op-kpi r" data-aos="flip-up" data-aos-delay="300">
-    <div class="op-icon"><i data-lucide="star" style="color:var(--a)"></i></div>
-    <div class="op-value counter" data-target="100">0</div>
-    <div class="op-label">Tasa de Exito</div>
-    <div class="op-sub">Rendimiento global</div>
-  </div>
-  <div class="op-kpi m" data-aos="flip-up" data-aos-delay="400">
-    <div class="op-icon"><i data-lucide="zap" style="color:var(--warn)"></i></div>
-    <div class="op-value counter" data-target="38">0</div>
-    <div class="op-label">Total Casos</div>
-    <div class="op-sub">Todos los clientes</div>
-  </div>
-</div>
+<div class="grid-4" id="opGrid"></div>
 
 <!-- ====== WIDGET LINK ====== -->
 <div class="widget-link" data-aos="fade-up">
@@ -598,13 +506,306 @@ footer .footer-brand{color:var(--a3);font-weight:600}
 </div>
 
 <footer>
-  <p>Ultima Actualizacion: <span id="footerTime">19/03/2026 08:52:34</span> &mdash;
+  <p>Ultima Actualizacion: <span id="footerTime"></span> &mdash;
   <span class="footer-brand">NetserGroup</span> &copy; 2026 &mdash; Humberto Henriquez</p>
 </footer>
 
 </div>
 
 <script>
+// ====== EMBEDDED DATA ======
+const DATA = {
+  "today": {
+    "HP Comercial": 0,
+    "HPE": 0,
+    "Payless": 0,
+    "Netapp": 2,
+    "Lexmark": 0,
+    "Lexmark Kit": 0,
+    "CTDI": 0,
+    "Monthly Fee": 0,
+    "Lenovo": 7
+  },
+  "history": [
+    {
+      "date": "(24/3/2026 00:00:00)",
+      "clients": {
+        "HP Comercial": 0,
+        "HPE": 0,
+        "Payless": 0,
+        "Netapp": 2,
+        "Lexmark": 0,
+        "Lexmark Kit": 0,
+        "CTDI": 0,
+        "Monthly Fee": 0,
+        "Lenovo": 7
+      },
+      "total": 9
+    }
+  ],
+  "bots": [
+    {
+      "name": "BackUp Mobility",
+      "status": "OK"
+    },
+    {
+      "name": "Cierre POs",
+      "status": "OK"
+    },
+    {
+      "name": "Cierre Alpha",
+      "status": "OK"
+    },
+    {
+      "name": "Cierre HPCM",
+      "status": "OK"
+    },
+    {
+      "name": "Tasas Cambio",
+      "status": "OK"
+    },
+    {
+      "name": "Encuestas Dell",
+      "status": "OK"
+    },
+    {
+      "name": "Respaldo Invoice",
+      "status": "OK"
+    },
+    {
+      "name": "Cierre Residencias",
+      "status": "OK"
+    },
+    {
+      "name": "Receiving Lab",
+      "status": "OK"
+    },
+    {
+      "name": "Reporte Inv HP",
+      "status": "OK"
+    },
+    {
+      "name": "HPCM Cenam",
+      "status": "OK"
+    },
+    {
+      "name": "HPCM Chile",
+      "status": "OK"
+    },
+    {
+      "name": "Licencias FSM",
+      "status": "OK"
+    },
+    {
+      "name": "Regularizacion Mobility",
+      "status": "OK"
+    }
+  ],
+  "changes": {
+    "HP Comercial": 0,
+    "HPE": 0,
+    "Payless": 0,
+    "Netapp": 2,
+    "Lexmark": 0,
+    "Lexmark Kit": 0,
+    "CTDI": 0,
+    "Monthly Fee": 0,
+    "Lenovo": 7
+  },
+  "meta": {
+    "updateTime": "(24/3/2026 00:00:00)",
+    "totalBots": 14,
+    "botsOk": 14,
+    "botsFail": 0,
+    "totalCases": 9,
+    "activeClients": 2,
+    "totalClients": 9
+  },
+  "clientIcons": {
+    "HP Comercial": "🖨",
+    "HPE": "🖨",
+    "Payless": "🛒",
+    "Netapp": "☁",
+    "Lexmark": "🖨",
+    "Lexmark Kit": "🖨",
+    "CTDI": "🔧",
+    "Monthly Fee": "💲",
+    "Lenovo": "💻"
+  },
+  "clientOrder": [
+    "HP Comercial",
+    "HPE",
+    "Payless",
+    "Netapp",
+    "Lexmark",
+    "Lexmark Kit",
+    "CTDI",
+    "Monthly Fee",
+    "Lenovo"
+  ],
+  "chartColors": [
+    "#0D47A1",
+    "#1565C0",
+    "#1976D2",
+    "#1E88E5",
+    "#2196F3",
+    "#1A237E",
+    "#283593",
+    "#303F9F",
+    "#3949AB"
+  ]
+};
+
+// ====== RENDER DASHBOARD ======
+function renderDashboard() {
+  const D = DATA;
+  const meta = D.meta;
+  const today = D.today;
+  const changes = D.changes;
+  const bots = D.bots;
+  const clients = D.clientOrder;
+  const icons = D.clientIcons;
+  const colors = D.chartColors;
+
+  // --- KPI STRIP ---
+  const kpiStrip = document.getElementById('kpiStrip');
+  const totalChange = Object.values(changes).reduce((a,b) => a+b, 0);
+  const changeArrow = (val) => val > 0 ? '<span class="kpi-change up">\u2191 +'+val+'</span>' : val < 0 ? '<span class="kpi-change down">\u2193 '+val+'</span>' : '<span class="kpi-change neutral">= 0</span>';
+
+  kpiStrip.innerHTML = `
+    <div class="kpi-mini success tooltip" data-tip="Bots funcionando correctamente">
+      <div class="kpi-icon"><i data-lucide="bot"></i></div>
+      <div class="kpi-data">
+        <div class="kpi-value counter" data-target="${meta.botsOk}">0</div>
+        <div class="kpi-label">Bots OK</div>
+        <div class="kpi-sub">${meta.botsOk} / ${meta.totalBots} activos</div>
+      </div>
+    </div>
+    <div class="kpi-mini danger tooltip" data-tip="Bots con errores">
+      <div class="kpi-icon"><i data-lucide="alert-triangle"></i></div>
+      <div class="kpi-data">
+        <div class="kpi-value counter" data-target="${meta.botsFail}">0</div>
+        <div class="kpi-label">Bots Fail</div>
+        <div class="kpi-sub">${meta.botsFail} errores detectados</div>
+      </div>
+    </div>
+    <div class="kpi-mini warning tooltip" data-tip="Alertas del sistema">
+      <div class="kpi-icon"><i data-lucide="bell"></i></div>
+      <div class="kpi-data">
+        <div class="kpi-value counter" data-target="${meta.botsFail}">0</div>
+        <div class="kpi-label">Alertas</div>
+        <div class="kpi-sub">${meta.botsFail === 0 ? 'Sin alertas pendientes' : meta.botsFail + ' alertas activas'}</div>
+      </div>
+    </div>
+    <div class="kpi-mini info tooltip" data-tip="Total de casos activos hoy">
+      <div class="kpi-icon"><i data-lucide="briefcase"></i></div>
+      <div class="kpi-data">
+        <div class="kpi-value counter" data-target="${meta.totalCases}">0</div>
+        <div class="kpi-label">Casos Activos ${changeArrow(totalChange)}</div>
+        <div class="kpi-sub">${meta.activeClients} clientes activos</div>
+      </div>
+    </div>
+  `;
+
+  // --- CLIENT CARDS ---
+  const clientsGrid = document.getElementById('clientsGrid');
+  document.getElementById('clientsBadge').textContent = meta.totalClients + ' clientes';
+
+  // Sort clients: active first (by cases desc), then inactive
+  const sortedClients = [...clients].sort((a, b) => today[b] - today[a]);
+  const maxCases = Math.max(...Object.values(today), 1);
+
+  let cardsHTML = '';
+  sortedClients.forEach((name, idx) => {
+    const val = today[name];
+    const pct = meta.totalCases > 0 ? Math.round(val / meta.totalCases * 100) : 0;
+    const barW = Math.round(val / maxCases * 100);
+    const icon = icons[name] || '\u2699';
+    const isZero = val === 0;
+    const isTop = idx === 0 && val > 0;
+    const chg = changes[name] || 0;
+    const chgClass = chg > 0 ? 'up' : chg < 0 ? 'down' : 'same';
+    const chgText = chg > 0 ? '+' + chg : chg < 0 ? '' + chg : '=';
+
+    cardsHTML += `
+      <div class="client-card${isTop ? ' active' : ''}${isZero ? ' zero-card' : ''}" data-client="${name}" data-aos="zoom-in" data-aos-delay="${50 + idx * 50}">
+        <div class="client-icon">${icon}</div>
+        <div class="client-value${isZero ? ' zero' : ''} counter" data-target="${val}">0</div>
+        <div class="client-name">${name}</div>
+        ${pct > 0 ? '<div class="client-pct">' + pct + '%</div>' : ''}
+        <div class="client-change ${chgClass}">${chgText}</div>
+        <div class="client-bar"><div class="client-bar-fill" data-width="${barW}"></div></div>
+      </div>
+    `;
+  });
+  clientsGrid.innerHTML = cardsHTML;
+
+  // --- RING ---
+  document.getElementById('ringValue').dataset.target = meta.totalCases;
+  document.getElementById('ringSub').textContent = meta.activeClients + ' clientes activos de ' + meta.totalClients;
+
+  // --- BOT TABLE ---
+  const botTable = document.getElementById('botTable');
+  let botHTML = '';
+  bots.forEach(b => {
+    const isOk = b.status === 'OK';
+    botHTML += `<tr><td>${b.name}</td><td><span class="${isOk ? 'status-ok' : 'status-fail'}"><i data-lucide="${isOk ? 'check-circle' : 'x-circle'}"></i> ${b.status}</span></td></tr>`;
+  });
+  botTable.innerHTML = botHTML;
+  document.getElementById('botsBadge').textContent = meta.totalBots + ' flujos monitoreados';
+
+  // --- BOT GAUGE ---
+  const successRate = meta.totalBots > 0 ? Math.round(meta.botsOk / meta.totalBots * 100) : 0;
+  document.getElementById('botGaugeValue').textContent = successRate + '%';
+  document.getElementById('botGaugeValue').style.color = successRate >= 80 ? 'var(--ok)' : successRate >= 50 ? 'var(--warn)' : 'var(--fail)';
+
+  document.getElementById('botStats').innerHTML = `
+    <div class="bot-stat"><div class="bot-stat-value" style="color:var(--ok)">${meta.botsOk}</div><div class="bot-stat-label">Exitosos</div></div>
+    <div class="bot-stat"><div class="bot-stat-value" style="color:var(--fail)">${meta.botsFail}</div><div class="bot-stat-label">Fallidos</div></div>
+    <div class="bot-stat"><div class="bot-stat-value" style="color:var(--a)">0</div><div class="bot-stat-label">Alertas</div></div>
+  `;
+
+  // --- OPERATIONAL KPIs ---
+  document.getElementById('opGrid').innerHTML = `
+    <div class="op-kpi s" data-aos="flip-up" data-aos-delay="100">
+      <div class="op-icon"><i data-lucide="check-circle" style="color:var(--ok)"></i></div>
+      <div class="op-value counter" data-target="${meta.botsOk}">0</div>
+      <div class="op-label">Exitosos</div>
+      <div class="op-sub">${meta.botsOk} / ${meta.totalBots} bots</div>
+    </div>
+    <div class="op-kpi f" data-aos="flip-up" data-aos-delay="200">
+      <div class="op-icon"><i data-lucide="x-circle" style="color:var(--fail)"></i></div>
+      <div class="op-value counter" data-target="${meta.botsFail}">0</div>
+      <div class="op-label">Fallidos</div>
+      <div class="op-sub">${meta.botsFail} / ${meta.totalBots} bots</div>
+    </div>
+    <div class="op-kpi r" data-aos="flip-up" data-aos-delay="300">
+      <div class="op-icon"><i data-lucide="star" style="color:var(--a)"></i></div>
+      <div class="op-value counter" data-target="${successRate}">0</div>
+      <div class="op-label">Tasa de Exito</div>
+      <div class="op-sub">Rendimiento global</div>
+    </div>
+    <div class="op-kpi m" data-aos="flip-up" data-aos-delay="400">
+      <div class="op-icon"><i data-lucide="zap" style="color:var(--warn)"></i></div>
+      <div class="op-value counter" data-target="${meta.totalCases}">0</div>
+      <div class="op-label">Total Casos</div>
+      <div class="op-sub">Todos los clientes</div>
+    </div>
+  `;
+
+  // --- HISTORY BADGE ---
+  document.getElementById('historyBadge').textContent = D.history.length + ' dias de datos';
+
+  // --- FOOTER ---
+  document.getElementById('footerTime').textContent = meta.updateTime;
+
+  // Re-create Lucide icons for dynamically injected HTML
+  lucide.createIcons();
+}
+
+// ====== INITIALIZE ======
+renderDashboard();
+
 // ====== INITIALIZE LUCIDE ICONS ======
 lucide.createIcons();
 
@@ -631,7 +832,7 @@ window.addEventListener('scroll', () => {
   document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40);
 });
 
-// ====== PARTICLE NETWORK (ENHANCED) ======
+// ====== PARTICLE NETWORK ======
 const cv = document.getElementById('pc'), cx = cv.getContext('2d');
 let mouseX = 0, mouseY = 0;
 function resizeCanvas() { cv.width = innerWidth; cv.height = innerHeight; }
@@ -710,28 +911,70 @@ ScrollTrigger.create({
   trigger: '#mainRing',
   start: 'top 80%',
   onEnter: () => {
-    var pct = 38 / Math.max(38, 30);
-    var circumference = 2 * Math.PI * 90;
+    const total = DATA.meta.totalCases;
+    const target = Math.max(total, 30);
+    const pct = total / target;
+    const circumference = 2 * Math.PI * 90;
     document.getElementById('mainRing').style.strokeDashoffset = circumference * (1 - pct);
   }
 });
 
-// ====== CLIENT CARDS 3D TILT + MOUSE GLOW ======
-document.querySelectorAll('.client-card').forEach(card => {
-  card.addEventListener('mousemove', e => {
-    const rect = card.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-    card.style.setProperty('--mx', (x * 100) + '%');
-    card.style.setProperty('--my', (y * 100) + '%');
-    card.style.transform = 'perspective(800px) rotateX(' + ((y - .5) * -12) + 'deg) rotateY(' + ((x - .5) * 12) + 'deg) translateY(-8px) scale(1.02)';
+// ====== CLIENT CARDS 3D TILT + MOUSE GLOW + CLICK ======
+let barChart, doChart;
+
+function setupClientCards() {
+  document.querySelectorAll('.client-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      card.style.setProperty('--mx', (x * 100) + '%');
+      card.style.setProperty('--my', (y * 100) + '%');
+      card.style.transform = 'perspective(800px) rotateX(' + ((y - .5) * -12) + 'deg) rotateY(' + ((x - .5) * 12) + 'deg) translateY(-8px) scale(1.02)';
+    });
+    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    card.addEventListener('click', () => {
+      const clientName = card.dataset.client;
+      document.querySelectorAll('.client-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      highlightClientInCharts(clientName);
+      document.getElementById('resumenGrid').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
   });
-  card.addEventListener('mouseleave', () => { card.style.transform = ''; });
-  card.addEventListener('click', () => {
-    document.querySelectorAll('.client-card').forEach(c => c.classList.remove('active'));
-    card.classList.add('active');
+}
+setupClientCards();
+
+function highlightClientInCharts(clientName) {
+  if (!barChart || !doChart) return;
+  const clients = DATA.clientOrder;
+  const activeClients = clients.filter(c => DATA.today[c] > 0);
+  const idx = activeClients.indexOf(clientName);
+  if (idx === -1) return;
+
+  // Highlight in bar chart
+  const bgColors = activeClients.map((c, i) => {
+    if (c === clientName) return DATA.chartColors[i % DATA.chartColors.length];
+    return DATA.chartColors[i % DATA.chartColors.length] + '40';
   });
-});
+  barChart.data.datasets[0].backgroundColor = bgColors;
+  barChart.update();
+
+  // Highlight in doughnut
+  const doBg = activeClients.map((c, i) => {
+    if (c === clientName) return DATA.chartColors[i % DATA.chartColors.length];
+    return DATA.chartColors[i % DATA.chartColors.length] + '30';
+  });
+  doChart.data.datasets[0].backgroundColor = doBg;
+  doChart.update();
+
+  // Reset after 3 seconds
+  setTimeout(() => {
+    barChart.data.datasets[0].backgroundColor = activeClients.map((c, i) => DATA.chartColors[i % DATA.chartColors.length]);
+    barChart.update();
+    doChart.data.datasets[0].backgroundColor = activeClients.map((c, i) => DATA.chartColors[i % DATA.chartColors.length]);
+    doChart.update();
+  }, 3000);
+}
 
 // ====== ANIMATE CLIENT BAR FILLS ======
 setTimeout(() => {
@@ -774,23 +1017,28 @@ function createGradient(ctx, colors) {
   return gradient;
 }
 
-var barCtx = document.getElementById('barC').getContext('2d');
-var barColors = [['#0D47A1','#1976D2'],['#1565C0','#2196F3'],['#1976D2','#42A5F5'],
+// Filter to active clients only
+const activeClients = DATA.clientOrder.filter(c => DATA.today[c] > 0);
+const activeValues = activeClients.map(c => DATA.today[c]);
+const activeColors = activeClients.map((c, i) => DATA.chartColors[i % DATA.chartColors.length]);
+
+// BAR CHART
+const barCtx = document.getElementById('barC').getContext('2d');
+const barColorPairs = [['#0D47A1','#1976D2'],['#1565C0','#2196F3'],['#1976D2','#42A5F5'],
   ['#1E88E5','#64B5F6'],['#2196F3','#90CAF9'],['#1A237E','#3F51B5'],
   ['#283593','#5C6BC0'],['#303F9F','#7986CB'],['#3949AB','#9FA8DA']];
-var barBg = [];
-for (var bi = 0; bi < 4; bi++) {
-  barBg.push(createGradient(barCtx, barColors[bi] || barColors[0]));
-}
+const barBg = activeClients.map((c, i) => createGradient(barCtx, barColorPairs[i % barColorPairs.length]));
+const barBorder = ['#1E88E5','#42A5F5','#64B5F6','#90CAF9','#BBDEFB','#5C6BC0','#7986CB','#9FA8DA','#C5CAE9'];
+const totalCases = DATA.meta.totalCases;
 
-new Chart(barCtx, {
+barChart = new Chart(barCtx, {
   type: 'bar',
   data: {
-    labels: ["CTDI", "Lenovo", "HPE", "Lexmark"],
+    labels: activeClients,
     datasets: [{
-      data: [34, 2, 1, 1],
+      data: activeValues,
       backgroundColor: barBg,
-      borderColor: ['#1E88E5','#42A5F5','#64B5F6','#90CAF9','#BBDEFB','#5C6BC0','#7986CB','#9FA8DA','#C5CAE9'].slice(0, 4),
+      borderColor: activeClients.map((c, i) => barBorder[i % barBorder.length]),
       borderWidth: 2, borderRadius: 10, borderSkipped: false
     }]
   },
@@ -803,7 +1051,7 @@ new Chart(barCtx, {
         formatter: v => v > 0 ? v : '' },
       tooltip: { backgroundColor: 'rgba(6,14,26,.95)', borderColor: '#1E3A5F',
         borderWidth: 1, cornerRadius: 12, padding: 14, titleFont: { weight: 700 },
-        callbacks: { label: ctx => ctx.parsed.y + ' casos (' + Math.round(ctx.parsed.y / 38 * 100) + '%)' } }
+        callbacks: { label: ctx => ctx.parsed.y + ' casos (' + (totalCases > 0 ? Math.round(ctx.parsed.y / totalCases * 100) : 0) + '%)' } }
     },
     scales: {
       x: { grid: { display: false }, ticks: { font: { size: 11, weight: 600 } } },
@@ -814,13 +1062,14 @@ new Chart(barCtx, {
   plugins: [ChartDataLabels]
 });
 
-new Chart(document.getElementById('doC'), {
+// DOUGHNUT CHART
+doChart = new Chart(document.getElementById('doC'), {
   type: 'doughnut',
   data: {
-    labels: ["CTDI", "Lenovo", "HPE", "Lexmark"],
+    labels: activeClients,
     datasets: [{
-      data: [34, 2, 1, 1],
-      backgroundColor: ['#0D47A1','#1565C0','#1976D2','#1E88E5','#2196F3','#1A237E','#283593','#303F9F','#3949AB'].slice(0, 4),
+      data: activeValues,
+      backgroundColor: activeColors,
       borderColor: '#0A1628', borderWidth: 4, hoverOffset: 20,
       hoverBorderColor: '#48CAE4', hoverBorderWidth: 3
     }]
@@ -844,11 +1093,12 @@ new Chart(document.getElementById('doC'), {
   plugins: [ChartDataLabels]
 });
 
+// BOT DOUGHNUT
 new Chart(document.getElementById('botD'), {
   type: 'doughnut',
   data: {
     labels: ['Exitosos', 'Fallidos'],
-    datasets: [{ data: [14, 0],
+    datasets: [{ data: [DATA.meta.botsOk, DATA.meta.botsFail],
       backgroundColor: ['rgba(0,184,148,.85)', 'rgba(225,112,85,.85)'],
       borderWidth: 0, hoverOffset: 10 }]
   },
@@ -861,49 +1111,185 @@ new Chart(document.getElementById('botD'), {
   }
 });
 
+// ====== HISTORICAL TREND CHART ======
+const historyDates = DATA.history.map(h => h.date);
+const trendColors = [
+  '#0D47A1','#1565C0','#1976D2','#1E88E5','#2196F3',
+  '#1A237E','#283593','#303F9F','#3949AB'
+];
+const trendColorsRGB = [
+  '13,71,161','21,101,192','25,118,210','30,136,229','33,150,243',
+  '26,35,126','40,53,147','48,63,159','57,73,171'
+];
+const hiddenClients = new Set();
+
+// Build legend
+const legendEl = document.getElementById('historyLegend');
+DATA.clientOrder.forEach((name, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'legend-item';
+  dot.dataset.client = name;
+  dot.innerHTML = '<span class="legend-dot" style="background:' + trendColors[i % trendColors.length] + '"></span>' + name;
+  dot.addEventListener('click', () => {
+    if (hiddenClients.has(name)) {
+      hiddenClients.delete(name);
+      dot.classList.remove('hidden');
+    } else {
+      hiddenClients.add(name);
+      dot.classList.add('hidden');
+    }
+    updateTrendChart();
+  });
+  legendEl.appendChild(dot);
+});
+
+let trendChart;
+function buildTrendChart() {
+  const datasets = DATA.clientOrder.map((name, i) => {
+    const color = trendColors[i % trendColors.length];
+    const rgb = trendColorsRGB[i % trendColorsRGB.length];
+    return {
+      label: name,
+      data: DATA.history.map(h => h.clients[name] || 0),
+      borderColor: color,
+      backgroundColor: 'rgba(' + rgb + ',.08)',
+      borderWidth: 2,
+      pointRadius: DATA.history.length > 30 ? 0 : 3,
+      pointHoverRadius: 6,
+      pointBackgroundColor: color,
+      pointBorderColor: '#0A1628',
+      pointBorderWidth: 2,
+      tension: 0.4,
+      fill: false,
+      hidden: hiddenClients.has(name)
+    };
+  });
+
+  // Add total line
+  datasets.push({
+    label: 'Total',
+    data: DATA.history.map(h => h.total),
+    borderColor: '#FDCB6E',
+    backgroundColor: 'rgba(253,203,110,.06)',
+    borderWidth: 3,
+    borderDash: [6, 3],
+    pointRadius: DATA.history.length > 30 ? 0 : 4,
+    pointHoverRadius: 7,
+    pointBackgroundColor: '#FDCB6E',
+    pointBorderColor: '#0A1628',
+    pointBorderWidth: 2,
+    tension: 0.4,
+    fill: false,
+    hidden: hiddenClients.has('Total')
+  });
+
+  return datasets;
+}
+
+function createTrendChart() {
+  const ctx = document.getElementById('trendC').getContext('2d');
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: historyDates,
+      datasets: buildTrendChart()
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      animation: { duration: 1500, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(6,14,26,.95)',
+          borderColor: '#1E3A5F',
+          borderWidth: 1,
+          cornerRadius: 12,
+          padding: 14,
+          titleFont: { weight: 700, size: 13 },
+          bodyFont: { size: 12 },
+          callbacks: {
+            label: function(ctx) {
+              if (ctx.parsed.y === 0 && ctx.dataset.label !== 'Total') return null;
+              return ' ' + ctx.dataset.label + ': ' + ctx.parsed.y + ' casos';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(30,58,95,.15)' },
+          ticks: {
+            font: { size: 10 },
+            maxRotation: 45,
+            maxTicksLimit: 15
+          }
+        },
+        y: {
+          grid: { color: 'rgba(30,58,95,.2)', drawBorder: false },
+          beginAtZero: true,
+          ticks: { font: { size: 10 } }
+        }
+      }
+    }
+  });
+}
+createTrendChart();
+
+// Add Total to legend
+(function() {
+  const dot = document.createElement('div');
+  dot.className = 'legend-item';
+  dot.dataset.client = 'Total';
+  dot.innerHTML = '<span class="legend-dot" style="background:#FDCB6E"></span>Total';
+  dot.addEventListener('click', () => {
+    if (hiddenClients.has('Total')) {
+      hiddenClients.delete('Total');
+      dot.classList.remove('hidden');
+    } else {
+      hiddenClients.add('Total');
+      dot.classList.add('hidden');
+    }
+    updateTrendChart();
+  });
+  legendEl.appendChild(dot);
+})();
+
+function updateTrendChart() {
+  if (!trendChart) return;
+  trendChart.data.datasets = buildTrendChart();
+  trendChart.update();
+}
+
 // ====== THEME TOGGLE ======
-var darkMode = true;
+let darkMode = localStorage.getItem('theme') !== 'light';
+if (!darkMode) document.body.classList.add('light');
+
 document.getElementById('themeToggle').addEventListener('click', () => {
   darkMode = !darkMode;
-  const root = document.documentElement;
-  if (!darkMode) {
-    root.style.setProperty('--bg', '#F0F4F8');
-    root.style.setProperty('--bg2', '#E2E8F0');
-    root.style.setProperty('--bg3', '#CBD5E1');
-    root.style.setProperty('--bg-card', 'rgba(255,255,255,.75)');
-    root.style.setProperty('--brd', '#D1D9E6');
-    root.style.setProperty('--t1', '#1E293B');
-    root.style.setProperty('--t2', '#334155');
-    root.style.setProperty('--t3', '#64748B');
-    root.style.setProperty('--t4', '#94A3B8');
-    root.style.setProperty('--glass', 'rgba(0,0,0,.02)');
-    root.style.setProperty('--glass2', 'rgba(0,0,0,.04)');
-    document.body.style.background = '#F0F4F8';
-    document.getElementById('pc').style.opacity = '.08';
-    document.querySelector('.ambient').style.opacity = '.3';
-  } else {
-    root.style.setProperty('--bg', '#060E1A');
-    root.style.setProperty('--bg2', '#0A1628');
-    root.style.setProperty('--bg3', '#0D1B2A');
-    root.style.setProperty('--bg-card', 'rgba(18,35,61,.65)');
-    root.style.setProperty('--brd', '#1E3A5F');
-    root.style.setProperty('--t1', '#FFFFFF');
-    root.style.setProperty('--t2', '#D1D9E6');
-    root.style.setProperty('--t3', '#5A7A9A');
-    root.style.setProperty('--t4', '#3D5A80');
-    root.style.setProperty('--glass', 'rgba(255,255,255,.03)');
-    root.style.setProperty('--glass2', 'rgba(255,255,255,.06)');
-    document.body.style.background = '#060E1A';
-    document.getElementById('pc').style.opacity = '.3';
-    document.querySelector('.ambient').style.opacity = '1';
-  }
+  document.body.classList.toggle('light', !darkMode);
+  localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+
   const btn = document.getElementById('themeToggle');
   btn.innerHTML = darkMode ? '<i data-lucide="sun"><\/i>' : '<i data-lucide="moon"><\/i>';
   lucide.createIcons();
   gsap.fromTo(btn, { rotation: 0 }, { rotation: 360, duration: .5, ease: 'power2.out' });
+
+  // Update chart colors for theme
+  if (barChart) {
+    barChart.options.scales.x.ticks.color = darkMode ? '#5A7A9A' : '#64748B';
+    barChart.options.scales.y.ticks.color = darkMode ? '#5A7A9A' : '#64748B';
+    barChart.update();
+  }
+  if (doChart) {
+    doChart.data.datasets[0].borderColor = darkMode ? '#0A1628' : '#F0F4F8';
+    doChart.update();
+  }
 });
 
-// ====== KPI CARD HOVER ======
+// ====== KPI / OP-KPI CARD HOVER ======
 document.querySelectorAll('.kpi-mini, .op-kpi').forEach(card => {
   card.addEventListener('mouseenter', () => { gsap.to(card, { scale: 1.03, duration: .3, ease: 'power2.out' }); });
   card.addEventListener('mouseleave', () => { gsap.to(card, { scale: 1, y: 0, duration: .3, ease: 'power2.out' }); });
@@ -913,16 +1299,6 @@ document.querySelectorAll('.kpi-mini, .op-kpi').forEach(card => {
 const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 tl.from('.navbar', { y: -60, opacity: 0, duration: .8 })
   .from('.kpi-strip', { y: 40, opacity: 0, duration: .6 }, '-=.4');
-
-// ====== UPDATE FOOTER TIME ======
-function updateFooter() {
-  const now = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  document.getElementById('footerTime').textContent =
-    pad(now.getDate()) + '/' + pad(now.getMonth() + 1) + '/' + now.getFullYear() + ' ' +
-    pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
-}
-setInterval(updateFooter, 1000);
 </script>
 </body>
 </html>
