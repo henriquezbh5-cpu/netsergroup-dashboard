@@ -8,8 +8,13 @@ echo   NetserGroup Dashboard - Actualizando
 echo ========================================
 echo.
 
-echo [1/4] Generando dashboard y widget desde Excel...
+echo [1/4] Generando dashboard desde Excel...
 python generar_dashboard.py
+if %errorlevel% neq 0 (
+    echo ERROR: Fallo al generar dashboard. Verifica que Python y openpyxl esten instalados.
+    pause
+    exit /b 1
+)
 echo.
 
 echo [2/4] Preparando Git...
@@ -22,14 +27,13 @@ if %errorlevel% neq 0 (
 echo.
 
 echo [3/4] Agregando archivos y creando commit...
-git add index.html widget.html generar_dashboard.py ACTUALIZAR_DASHBOARD.bat manifest.json sw.js
-git commit -m "Dashboard y widget actualizado %date% %time%"
+git add index.html generar_dashboard.py ACTUALIZAR_DASHBOARD.bat
+git commit -m "Dashboard actualizado %date% %time%"
 echo.
 
 echo [4/4] Subiendo a GitHub...
-git branch -M main
+git pull --rebase origin main 2>nul
 git push -u origin main 2>&1
-echo.
 
 if %errorlevel% neq 0 (
     echo.
@@ -41,17 +45,9 @@ echo.
 echo Abriendo dashboard...
 start "" "https://henriquezbh5-cpu.github.io/netsergroup-dashboard/"
 echo.
-echo Widget movil disponible en:
-echo https://henriquezbh5-cpu.github.io/netsergroup-dashboard/widget.html
-echo.
 echo ========================================
 echo   Listo! Espera 30-60 segundos y
 echo   recarga con Ctrl+F5
 echo ========================================
-echo.
-echo Para instalar el widget en tu celular:
-echo   1. Abre el link del widget en Chrome
-echo   2. Toca los 3 puntos (menu)
-echo   3. Selecciona "Agregar a pantalla de inicio"
 echo.
 pause
