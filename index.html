@@ -574,15 +574,16 @@ body::before{
 })();
 
 /* ---------- 6. CHART.JS CHARTS ---------- */
+var barChart, donutChart, bgColors, borderColors, labelColors;
 (function chartsModule() {
   var labels = ["CTDI", "Lenovo", "HP Comercial", "Netapp", "Lexmark"];
   var values = [28, 8, 5, 2, 1];
   var total = 44;
   var darkColors = ['#0c4a6e','#064e3b','#78350f','#3b0764','#7f1d1d','#0e4a7a','#065f46','#831843','#312e81','#7c2d12'];
   var brightColors = ['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8','#fb923c'];
-  var bgColors = labels.map(function(_, i) { return darkColors[i % darkColors.length]; });
-  var borderColors = labels.map(function(_, i) { return brightColors[i % brightColors.length]; });
-  var labelColors = labels.map(function(_, i) { return brightColors[i % brightColors.length]; });
+  bgColors = labels.map(function(_, i) { return darkColors[i % darkColors.length]; });
+  borderColors = labels.map(function(_, i) { return brightColors[i % brightColors.length]; });
+  labelColors = labels.map(function(_, i) { return brightColors[i % brightColors.length]; });
 
   Chart.defaults.color = '#cbd5e1';
   Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
@@ -592,7 +593,7 @@ body::before{
 
   /* --- BAR CHART --- */
   var barCtx = document.getElementById('barChart');
-  var barChart = new Chart(barCtx, {
+  barChart = new Chart(barCtx, {
     type: 'bar',
     data: {
       labels: labels,
@@ -663,7 +664,7 @@ body::before{
 
   /* --- DONUT CHART --- */
   var donutCtx = document.getElementById('donutChart');
-  var donutChart = new Chart(donutCtx, {
+  donutChart = new Chart(donutCtx, {
     type: 'doughnut',
     data: {
       labels: labels,
@@ -750,6 +751,117 @@ body::before{
     donutChart.tooltip.setActiveElements([]);
     donutChart.update('none');
   });
+})();
+
+/* ====== CONTINUOUS ANIMATIONS ====== */
+
+// 1. DONUT ROTATION — gira lento constantemente
+(function() {
+  var rotation = 0;
+  function spinDonut() {
+    rotation += 0.15;
+    donutChart.options.rotation = rotation;
+    donutChart.update('none');
+    requestAnimationFrame(spinDonut);
+  }
+  // Start after initial animation completes
+  setTimeout(spinDonut, 2000);
+})();
+
+// 2. BAR PULSE — barras pulsan suavemente
+(function() {
+  var phase = 0;
+  function pulsBars() {
+    phase += 0.03;
+    var newBg = bgColors.map(function(baseColor, i) {
+      var pulse = 0.7 + 0.3 * Math.sin(phase + i * 0.8);
+      return adjustAlpha(baseColor, pulse);
+    });
+    barChart.data.datasets[0].backgroundColor = newBg;
+    barChart.update('none');
+    requestAnimationFrame(pulsBars);
+  }
+  function adjustAlpha(hex, alpha) {
+    var r = parseInt(hex.slice(1,3), 16);
+    var g = parseInt(hex.slice(3,5), 16);
+    var b = parseInt(hex.slice(5,7), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
+  setTimeout(pulsBars, 2000);
+})();
+
+// 3. KPI GLOW PULSE — numeros brillan ciclicamente
+(function() {
+  var kpiVals = document.querySelectorAll('.kpi-val');
+  var phase = 0;
+  function glowKpis() {
+    phase += 0.02;
+    kpiVals.forEach(function(el, i) {
+      var intensity = 15 + 15 * Math.sin(phase + i * 1.2);
+      var intensity2 = 30 + 20 * Math.sin(phase + i * 1.2);
+      el.style.textShadow = '0 0 ' + intensity + 'px currentColor, 0 0 ' + intensity2 + 'px currentColor';
+    });
+    requestAnimationFrame(glowKpis);
+  }
+  glowKpis();
+})();
+
+// 4. PROGRESS BAR SHIMMER — brillo que recorre la barra
+(function() {
+  var bar = document.querySelector('.progress-fill');
+  if (!bar) return;
+  var shimmer = document.createElement('div');
+  shimmer.style.cssText = 'position:absolute;top:0;left:-30%;width:30%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);animation:shimmerSlide 2s ease-in-out infinite;border-radius:inherit;';
+  bar.style.position = 'relative';
+  bar.style.overflow = 'hidden';
+  bar.appendChild(shimmer);
+  var style = document.createElement('style');
+  style.textContent = '@keyframes shimmerSlide{0%{left:-30%}100%{left:100%}}';
+  document.head.appendChild(style);
+})();
+
+// 5. BOT PILLS — status icons parpadean suavemente
+(function() {
+  var icons = document.querySelectorAll('.bot-icon');
+  var phase = 0;
+  function blinkIcons() {
+    phase += 0.04;
+    icons.forEach(function(el, i) {
+      var opacity = 0.6 + 0.4 * Math.sin(phase + i * 0.5);
+      el.style.opacity = opacity;
+    });
+    requestAnimationFrame(blinkIcons);
+  }
+  blinkIcons();
+})();
+
+// 6. HEADER CLOCK GLOW — reloj pulsa suavemente
+(function() {
+  var clock = document.querySelector('.clock');
+  if (!clock) return;
+  var phase = 0;
+  function glowClock() {
+    phase += 0.03;
+    var g = 8 + 6 * Math.sin(phase);
+    clock.style.textShadow = '0 0 ' + g + 'px rgba(0,212,255,0.5)';
+    requestAnimationFrame(glowClock);
+  }
+  glowClock();
+})();
+
+// 7. CARD BORDERS — bordes de panels respiran
+(function() {
+  var panels = document.querySelectorAll('.panel, .kpi');
+  var phase = 0;
+  function breatheBorders() {
+    phase += 0.015;
+    panels.forEach(function(el, i) {
+      var alpha = 0.08 + 0.12 * Math.sin(phase + i * 0.6);
+      el.style.borderColor = 'rgba(0,212,255,' + alpha.toFixed(3) + ')';
+    });
+    requestAnimationFrame(breatheBorders);
+  }
+  breatheBorders();
 })();
 </script>
 </body>
