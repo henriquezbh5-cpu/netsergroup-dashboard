@@ -124,6 +124,21 @@ body::before{
 }
 
 /* ====== CHART PANELS ====== */
+/* CLIENT CARDS */
+.clients-section{display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start}
+.client-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
+.client-card{background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;position:relative;overflow:hidden;transition:all .3s;cursor:default}
+.client-card:hover{border-color:var(--border-hover);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,0.3)}
+.client-card.active{border-color:var(--cyan);box-shadow:0 0 20px rgba(0,212,255,0.15)}
+.client-card-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.client-card-pct{position:absolute;top:8px;right:10px;font-size:10px;font-weight:600;color:var(--txt2);opacity:.7}
+.client-card-icon{font-size:22px;margin-bottom:4px;opacity:.5}
+.client-card-val{font-size:40px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.client-card-name{font-size:11px;color:var(--txt2);font-weight:500;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.client-card-change{font-size:11px;font-weight:600;margin-top:2px}
+.client-card-bar{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 14px 14px;transition:width 1.5s ease}
+.donut-panel{background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:14px;padding:22px;position:relative}
+
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .panel{
   background:var(--card);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
@@ -253,6 +268,7 @@ body::before{
 /* ====== RESPONSIVE ====== */
 @media(max-width:1024px){
   .kpis{grid-template-columns:repeat(2,1fr)}
+  .clients-section{grid-template-columns:1fr}
   .charts-grid{grid-template-columns:1fr}
 }
 @media(max-width:640px){
@@ -283,9 +299,22 @@ body::before{
 
 <!-- ====== HEADER ====== -->
 <header class="header anim-up d1">
-  <div>
-    <div class="logo">NETSER<span>GROUP</span></div>
-    <div class="logo-sub" id="typingSub"></div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <svg width="44" height="44" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="50" rx="45" ry="20" stroke="url(#lg1)" stroke-width="2.5" transform="rotate(-25 50 50)" opacity="0.7"/>
+      <ellipse cx="50" cy="50" rx="45" ry="20" stroke="url(#lg2)" stroke-width="2.5" transform="rotate(25 50 50)" opacity="0.5"/>
+      <circle cx="50" cy="50" r="12" fill="url(#lg3)"/>
+      <circle cx="50" cy="50" r="6" fill="#00d4ff" opacity="0.9"/>
+      <defs>
+        <linearGradient id="lg1" x1="0" y1="0" x2="100" y2="100"><stop stop-color="#00d4ff"/><stop offset="1" stop-color="#0066cc"/></linearGradient>
+        <linearGradient id="lg2" x1="100" y1="0" x2="0" y2="100"><stop stop-color="#94a3b8"/><stop offset="1" stop-color="#334155"/></linearGradient>
+        <radialGradient id="lg3" cx="50%" cy="50%"><stop stop-color="#00d4ff" stop-opacity="0.3"/><stop offset="1" stop-color="#0066cc" stop-opacity="0.1"/></radialGradient>
+      </defs>
+    </svg>
+    <div>
+      <div class="logo">NETSER<span>GROUP</span></div>
+      <div class="logo-sub" id="typingSub"></div>
+    </div>
   </div>
   <div class="header-center">
     <div class="status-badge"><span class="status-dot"></span> Sistema Operativo</div>
@@ -329,21 +358,22 @@ body::before{
 </section>
 
 <!-- ====== CHARTS ====== -->
-<div class="section-title anim-up d6">Analisis de Casos por Cliente</div>
-<section class="charts-grid">
-  <div class="panel anim-up d7">
-    <div class="panel-title">Casos por Cliente</div>
-    <div class="chart-box"><canvas id="barChart"></canvas></div>
-  </div>
-  <div class="panel anim-up d8 donut-wrap">
-    <div class="panel-title">Distribucion Porcentual</div>
+<div class="section-title anim-up d6">Casos por Cliente <span style="float:right;font-size:11px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);padding:4px 14px;border-radius:20px;color:var(--cyan);font-weight:500">9 clientes</span></div>
+
+<section class="clients-section anim-up d7">
+  <div class="client-cards" id="clientCards"></div>
+  <div class="panel donut-panel">
+    <div class="panel-title">Distribucion</div>
     <div class="donut-center">
       <div class="num" data-counter="44">0</div>
-      <div class="lab">Total Casos</div>
+      <div class="lab">Total</div>
     </div>
-    <div class="chart-box"><canvas id="donutChart"></canvas></div>
+    <div class="chart-box" style="height:320px"><canvas id="donutChart"></canvas></div>
   </div>
 </section>
+
+<!-- Hidden bar chart canvas (needed for data processing) -->
+<canvas id="barChart" style="display:none"></canvas>
 
 <!-- ====== BOTS STATUS ====== -->
 <div class="section-title anim-up d9">Estado de Bots / Flujos Automatizados</div>
@@ -574,6 +604,40 @@ body::before{
 })();
 
 /* ---------- 6. CHART.JS CHARTS ---------- */
+/* ---------- CLIENT CARDS ---------- */
+(function() {
+  var clients = [
+    {name:'CTDI', cases:28, icon:'&#128295;'},
+    {name:'Lenovo', cases:8, icon:'&#128187;'},
+    {name:'HP Comercial', cases:5, icon:'&#128424;'},
+    {name:'Netapp', cases:2, icon:'&#9729;'},
+    {name:'Lexmark', cases:1, icon:'&#128424;'},
+    {name:'HPE', cases:0, icon:'&#128424;'},
+    {name:'Payless', cases:0, icon:'&#128722;'},
+    {name:'Lexmark Kit', cases:0, icon:'&#128424;'},
+    {name:'Monthly Fee', cases:0, icon:'&#36;'}
+  ];
+  var total = 44;
+  var brightColors = ['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8'];
+  var container = document.getElementById('clientCards');
+  var html = '';
+  clients.forEach(function(c, i) {
+    var color = brightColors[i % brightColors.length];
+    var pct = total > 0 ? Math.round(c.cases / total * 100) : 0;
+    var barW = total > 0 ? Math.round(c.cases / 28 * 100) : 0; // max bar relative to highest
+    html += '<div class="client-card" style="animation:fadeSlideUp .5s ease ' + (0.1 + i * 0.06) + 's both">' +
+      '<div class="client-card-accent" style="background:' + color + '"></div>' +
+      (pct > 0 ? '<div class="client-card-pct" style="color:' + color + '">' + pct + '%</div>' : '') +
+      '<div class="client-card-icon">' + c.icon + '</div>' +
+      '<div class="client-card-val" style="color:' + (c.cases > 0 ? '#e2e8f0' : '#334155') + '">' + c.cases + '</div>' +
+      '<div class="client-card-name">' + c.name + '</div>' +
+      (c.cases > 0 ? '<div class="client-card-change" style="color:' + color + '">+' + c.cases + '</div>' : '<div class="client-card-change" style="color:#475569">=</div>') +
+      '<div class="client-card-bar" style="width:' + barW + '%;background:' + color + '"></div>' +
+      '</div>';
+  });
+  container.innerHTML = html;
+})();
+
 var barChart, donutChart, bgColors, borderColors, labelColors;
 (function chartsModule() {
   var labels = ["CTDI", "Lenovo", "HP Comercial", "Netapp", "Lexmark"];
