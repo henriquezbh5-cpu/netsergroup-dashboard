@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-NetserGroup Dashboard Generator v3.0
-Lee Reporte_NetserGroup_Final.xlsx y genera index.html futurista.
-Solo muestra datos que EXISTEN en el Excel, nada inventado.
+NetserGroup Dashboard Generator v4.0 — Ultra Futuristic
+Lee Reporte_NetserGroup_Final.xlsx y genera index.html
+con efectos de particulas, glassmorphism, animaciones y estilo cyberpunk.
 """
 import json, os, sys
 from datetime import datetime
@@ -22,14 +22,17 @@ BOTS = ["BackUp Mobility","Cierre POs","Cierre Alpha","Cierre HPCM","Tasas Cambi
         "Respaldo Invoice","Cierre Residencias","Receiving Lab","Reporte Inv HP","HPCM Cenam",
         "HPCM Chile","Licencias FSM","Regularizacion Mobility"]
 
+
 def safe_int(v):
     if v is None: return 0
     try: return int(float(v))
     except: return 0
 
+
 def is_ok(v):
     if v is None: return False
     return str(v).strip() in ("\u2714","\u2714\ufe0f","OK","ok","1","TRUE","True","true","\u2713")
+
 
 def read_data():
     wb = openpyxl.load_workbook(EXCEL, data_only=True, read_only=True)
@@ -49,195 +52,402 @@ def read_data():
             "botsOK": sum(1 for v in bots.values() if v),
             "botsFail": sum(1 for v in bots.values() if not v)}
 
+
 def generate_html(D):
     # Active clients sorted by cases desc
-    active = sorted([(c,v) for c,v in D["cases"].items() if v > 0], key=lambda x: -x[1])
+    active = sorted([(c, v) for c, v in D["cases"].items() if v > 0], key=lambda x: -x[1])
     all_clients = sorted(D["cases"].items(), key=lambda x: -x[1])
     bots_ok = D["botsOK"]
     bots_fail = D["botsFail"]
     bots_total = bots_ok + bots_fail
-    tasa = round(bots_ok/bots_total*100, 1) if bots_total > 0 else 0
+    tasa = round(bots_ok / bots_total * 100, 1) if bots_total > 0 else 0
 
     # JSON data for charts
-    chart_labels = json.dumps([c for c,_ in active])
-    chart_values = json.dumps([v for _,v in active])
+    chart_labels = json.dumps([c for c, _ in active])
+    chart_values = json.dumps([v for _, v in active])
 
     # Bot grid HTML
     bot_pills = ""
+    idx = 0
     for name, ok in D["bots"].items():
         cls = "ok" if ok else "fail"
         icon = "&#10003;" if ok else "&#10007;"
         status_text = "OK" if ok else "FAIL"
-        bot_pills += f'<div class="bot-pill {cls}"><span class="bot-icon">{icon}</span><span class="bot-name">{name}</span><span class="bot-tag {cls}">{status_text}</span></div>\n'
+        delay = round(0.05 * idx, 2)
+        bot_pills += (
+            f'<div class="bot-pill {cls}" style="animation-delay:{delay}s">'
+            f'<span class="bot-icon">{icon}</span>'
+            f'<span class="bot-name">{name}</span>'
+            f'<span class="bot-tag {cls}">{status_text}</span>'
+            f'</div>\n'
+        )
+        idx += 1
 
     html = f'''<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NetserGroup — Centro de Operaciones</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>NetserGroup &mdash; Centro de Operaciones</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
+/* ====== RESET & VARS ====== */
 *{{margin:0;padding:0;box-sizing:border-box}}
 :root{{
-  --bg:#0a0e1a;--bg2:#0f1629;--card:rgba(15,23,42,0.65);
-  --border:rgba(0,212,255,0.12);--border-hover:rgba(0,212,255,0.3);
+  --bg1:#060a14;--bg2:#0c1222;
+  --card:rgba(12,18,34,0.7);--card-hover:rgba(12,18,34,0.85);
+  --border:rgba(0,212,255,0.1);--border-hover:rgba(0,212,255,0.35);
   --cyan:#00d4ff;--green:#00f5a0;--red:#ff6b6b;--gold:#fbbf24;--purple:#a78bfa;
-  --txt:#e2e8f0;--txt2:#94a3b8;--txt3:#64748b;
+  --txt:#e2e8f0;--txt2:#94a3b8;--txt3:#475569;
 }}
-body{{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(135deg,var(--bg),var(--bg2));color:var(--txt);min-height:100vh;overflow-x:hidden}}
-.wrap{{max-width:1400px;margin:0 auto;padding:20px}}
+html{{scroll-behavior:smooth}}
+body{{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 50%,#0a0f1e 100%);
+  color:var(--txt);min-height:100vh;overflow-x:hidden;
+}}
 
-/* HEADER */
-.header{{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:16px;margin-bottom:20px}}
-.logo{{font-size:22px;font-weight:700;letter-spacing:2px}}
-.logo span{{color:var(--cyan)}}
-.logo-sub{{font-size:12px;color:var(--txt3);margin-top:2px}}
+/* ====== HOLOGRAPHIC GRID BACKGROUND ====== */
+body::before{{
+  content:'';position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(0,212,255,0.02) 59px,rgba(0,212,255,0.02) 60px),
+    repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(0,212,255,0.02) 59px,rgba(0,212,255,0.02) 60px);
+}}
+
+/* ====== FLOATING GLOW ORBS ====== */
+.orb{{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.035;pointer-events:none;z-index:0}}
+.orb-1{{width:600px;height:600px;background:var(--cyan);top:-200px;left:-100px;animation:orbDrift1 20s ease-in-out infinite}}
+.orb-2{{width:500px;height:500px;background:var(--purple);bottom:-150px;right:-100px;animation:orbDrift2 25s ease-in-out infinite}}
+.orb-3{{width:400px;height:400px;background:var(--green);top:40%;left:60%;animation:orbDrift3 18s ease-in-out infinite}}
+@keyframes orbDrift1{{0%,100%{{transform:translate(0,0)}}50%{{transform:translate(120px,80px)}}}}
+@keyframes orbDrift2{{0%,100%{{transform:translate(0,0)}}50%{{transform:translate(-100px,-60px)}}}}
+@keyframes orbDrift3{{0%,100%{{transform:translate(0,0)}}33%{{transform:translate(-80px,50px)}}66%{{transform:translate(60px,-40px)}}}}
+
+/* ====== PARTICLE CANVAS ====== */
+#particles{{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}}
+
+/* ====== MAIN WRAPPER ====== */
+.wrap{{max-width:1440px;margin:0 auto;padding:24px 28px;position:relative;z-index:2}}
+
+/* ====== HEADER ====== */
+.header{{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 32px;
+  background:var(--card);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--border);border-radius:18px;
+  margin-bottom:24px;position:relative;overflow:hidden;
+}}
+.header::after{{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  animation:scanLine 4s ease-in-out infinite;
+}}
+@keyframes scanLine{{
+  0%{{left:-100%}}
+  50%{{left:100%}}
+  100%{{left:100%}}
+}}
+.logo{{font-size:26px;font-weight:800;letter-spacing:3px;text-shadow:0 0 20px rgba(0,212,255,0.3)}}
+.logo span{{color:var(--cyan);text-shadow:0 0 30px rgba(0,212,255,0.5)}}
+.logo-sub{{font-size:12px;color:var(--txt3);margin-top:4px;letter-spacing:1px;min-height:1.2em}}
+.header-center{{display:flex;align-items:center;gap:12px}}
+.status-badge{{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.25);
+  border-radius:24px;padding:7px 18px;font-size:11px;color:var(--green);font-weight:600;
+  letter-spacing:0.5px;text-transform:uppercase;
+}}
+.status-dot{{
+  width:8px;height:8px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px var(--green),0 0 16px rgba(0,245,160,0.3);
+  animation:pulseGlow 2s ease-in-out infinite;
+}}
+@keyframes pulseGlow{{
+  0%,100%{{opacity:1;box-shadow:0 0 8px var(--green),0 0 16px rgba(0,245,160,0.3)}}
+  50%{{opacity:0.4;box-shadow:0 0 4px var(--green),0 0 8px rgba(0,245,160,0.15)}}
+}}
 .header-right{{text-align:right;font-size:12px;color:var(--txt2)}}
-.clock{{font-size:18px;font-weight:600;color:var(--txt);font-variant-numeric:tabular-nums}}
-.status-badge{{display:inline-flex;align-items:center;gap:6px;background:rgba(0,245,160,0.1);border:1px solid rgba(0,245,160,0.3);border-radius:20px;padding:5px 14px;font-size:11px;color:var(--green);font-weight:500}}
-.status-dot{{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}}
-@keyframes pulse{{0%,100%{{opacity:1}}50%{{opacity:.3}}}}
+.clock{{font-size:22px;font-weight:700;color:var(--txt);font-variant-numeric:tabular-nums;letter-spacing:1px}}
+.update-label{{font-size:11px;color:var(--txt3);margin-top:4px}}
 
-/* KPI CARDS */
-.kpis{{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}}
-.kpi{{background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden;transition:all .3s}}
-.kpi:hover{{border-color:var(--border-hover);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.3)}}
-.kpi-accent{{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}}
-.kpi-val{{font-size:36px;font-weight:700;line-height:1.1;margin-top:6px}}
-.kpi-label{{font-size:11px;color:var(--txt3);font-weight:500;letter-spacing:1px;text-transform:uppercase;margin-top:6px}}
-.kpi-icon{{position:absolute;top:16px;right:18px;font-size:18px;opacity:.4}}
+/* ====== KPI CARDS ====== */
+.kpis{{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}}
+.kpi{{
+  background:var(--card);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--border);border-radius:16px;
+  padding:24px 26px;position:relative;overflow:hidden;
+  transition:all .35s cubic-bezier(.4,0,.2,1);cursor:default;
+}}
+.kpi:hover{{
+  border-color:var(--border-hover);transform:translateY(-3px) scale(1.02);
+  box-shadow:0 12px 40px rgba(0,0,0,0.4),0 0 30px rgba(0,212,255,0.06);
+}}
+.kpi-accent{{position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}}
+.kpi-glow{{
+  position:absolute;top:-40px;right:-40px;width:100px;height:100px;
+  border-radius:50%;filter:blur(40px);opacity:0.12;pointer-events:none;
+}}
+.kpi-icon{{position:absolute;top:18px;right:20px;font-size:20px;opacity:0.3}}
+.kpi-val{{font-size:42px;font-weight:800;line-height:1;margin-top:4px;font-variant-numeric:tabular-nums}}
+.kpi-label{{
+  font-size:10px;color:var(--txt3);font-weight:600;letter-spacing:1.5px;
+  text-transform:uppercase;margin-top:10px;
+}}
 
-/* SECTION */
-.section-title{{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;margin:24px 0 14px;color:var(--txt)}}
-.section-title::before{{content:'';width:4px;height:22px;background:var(--cyan);border-radius:4px}}
+/* ====== SECTION TITLES ====== */
+.section-title{{
+  display:flex;align-items:center;gap:12px;
+  font-size:14px;font-weight:700;margin:28px 0 16px;color:var(--txt);
+  letter-spacing:0.5px;text-transform:uppercase;
+}}
+.section-title::before{{
+  content:'';width:4px;height:24px;background:linear-gradient(180deg,var(--cyan),rgba(0,212,255,0.3));
+  border-radius:4px;box-shadow:0 0 8px rgba(0,212,255,0.3);
+}}
 
-/* CHARTS */
-.charts-grid{{display:grid;grid-template-columns:1fr 1fr;gap:16px}}
-.panel{{background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:14px;padding:22px;transition:border-color .3s}}
-.panel:hover{{border-color:var(--border-hover)}}
-.panel-title{{font-size:12px;font-weight:600;color:var(--txt2);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}}
-.chart-box{{position:relative;height:320px}}
-.donut-center{{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}}
-.donut-center .num{{font-size:42px;font-weight:700;color:var(--cyan)}}
-.donut-center .lab{{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px}}
+/* ====== CHART PANELS ====== */
+.charts-grid{{display:grid;grid-template-columns:1fr 1fr;gap:18px}}
+.panel{{
+  background:var(--card);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--border);border-radius:16px;
+  padding:24px 28px;
+  transition:all .35s cubic-bezier(.4,0,.2,1);
+}}
+.panel:hover{{border-color:var(--border-hover);box-shadow:0 8px 30px rgba(0,0,0,0.25)}}
+.panel-title{{
+  font-size:11px;font-weight:700;color:var(--txt2);letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:18px;
+  display:flex;align-items:center;gap:8px;
+}}
+.panel-title::before{{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--cyan);box-shadow:0 0 6px var(--cyan);
+}}
+.chart-box{{position:relative;height:340px}}
+.donut-wrap{{position:relative}}
+.donut-center{{
+  position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;z-index:5;
+}}
+.donut-center .num{{font-size:48px;font-weight:800;color:var(--cyan);text-shadow:0 0 20px rgba(0,212,255,0.3)}}
+.donut-center .lab{{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:2px;margin-top:2px}}
 
-/* BOTS */
-.bots-summary{{display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap}}
-.bots-count{{font-size:18px;font-weight:700}}
-.bots-bar{{flex:1;min-width:200px;height:8px;background:rgba(255,255,255,0.06);border-radius:8px;overflow:hidden}}
-.bots-bar-fill{{height:100%;border-radius:8px;transition:width 1.5s ease}}
-.bots-tasa{{font-size:36px;font-weight:700;text-align:right}}
-.bots-tasa-label{{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px}}
-.bots-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:16px}}
-.bot-pill{{display:flex;align-items:center;gap:10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;transition:all .25s}}
-.bot-pill:hover{{border-color:var(--border-hover);background:rgba(15,23,42,0.8)}}
-.bot-pill.ok .bot-icon{{color:var(--green);text-shadow:0 0 8px rgba(0,245,160,0.5)}}
-.bot-pill.fail .bot-icon{{color:var(--red);text-shadow:0 0 8px rgba(255,107,107,0.5)}}
-.bot-icon{{font-size:16px;font-weight:700;width:24px;text-align:center}}
+/* ====== BOTS SECTION ====== */
+.bots-summary{{
+  display:flex;align-items:center;gap:24px;margin-bottom:20px;flex-wrap:wrap;
+  padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.04);
+}}
+.bots-info{{flex-shrink:0}}
+.bots-count{{font-size:20px;font-weight:700}}
+.bots-desc{{font-size:12px;color:var(--txt3);margin-top:2px}}
+.bots-bar-wrap{{flex:1;min-width:220px}}
+.bots-bar{{
+  height:10px;background:rgba(255,255,255,0.05);border-radius:10px;
+  overflow:hidden;position:relative;
+}}
+.bots-bar-fill{{
+  height:100%;border-radius:10px;width:0;
+  transition:width 2s cubic-bezier(.4,0,.2,1);
+  position:relative;
+}}
+.bots-bar-fill::after{{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.2) 50%,transparent 100%);
+  animation:barShimmer 2s ease-in-out infinite;
+}}
+@keyframes barShimmer{{
+  0%{{transform:translateX(-100%)}}
+  100%{{transform:translateX(100%)}}
+}}
+.bots-tasa-wrap{{text-align:right;flex-shrink:0}}
+.bots-tasa{{font-size:40px;font-weight:800}}
+.bots-tasa-label{{font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px}}
+
+.bots-grid{{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));
+  gap:10px;margin-top:16px;
+}}
+.bot-pill{{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(12,18,34,0.5);border:1px solid rgba(255,255,255,0.04);
+  border-radius:12px;padding:12px 16px;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  animation:fadeSlideUp 0.5s ease both;
+}}
+.bot-pill:hover{{
+  border-color:var(--border-hover);background:var(--card-hover);
+  transform:translateX(4px);
+}}
+.bot-pill:hover .bot-tag{{animation:shimmerPill 1.5s ease infinite}}
+@keyframes shimmerPill{{
+  0%{{background-position:200% center}}
+  100%{{background-position:-200% center}}
+}}
+.bot-pill.ok .bot-icon{{color:var(--green);text-shadow:0 0 10px rgba(0,245,160,0.6)}}
+.bot-pill.fail .bot-icon{{color:var(--red);text-shadow:0 0 10px rgba(255,107,107,0.6)}}
+.bot-icon{{font-size:16px;font-weight:700;width:26px;text-align:center}}
 .bot-name{{flex:1;font-size:12px;font-weight:500;color:var(--txt2)}}
-.bot-tag{{font-size:10px;font-weight:600;padding:3px 10px;border-radius:6px;letter-spacing:.5px}}
-.bot-tag.ok{{background:rgba(0,245,160,0.12);color:var(--green)}}
-.bot-tag.fail{{background:rgba(255,107,107,0.12);color:var(--red)}}
+.bot-tag{{
+  font-size:9px;font-weight:700;padding:4px 12px;border-radius:8px;
+  letter-spacing:0.8px;text-transform:uppercase;
+  background-size:200% 100%;
+}}
+.bot-tag.ok{{
+  background:linear-gradient(90deg,rgba(0,245,160,0.12),rgba(0,245,160,0.2),rgba(0,245,160,0.12));
+  background-size:200% 100%;color:var(--green);
+}}
+.bot-tag.fail{{
+  background:linear-gradient(90deg,rgba(255,107,107,0.12),rgba(255,107,107,0.2),rgba(255,107,107,0.12));
+  background-size:200% 100%;color:var(--red);
+}}
 
-/* FOOTER */
-.footer{{text-align:center;padding:30px 0 20px;font-size:11px;color:var(--txt3)}}
+/* ====== FOOTER ====== */
+.footer{{
+  text-align:center;padding:36px 0 24px;font-size:11px;color:var(--txt3);
+  letter-spacing:0.5px;
+}}
+.footer-line{{
+  width:60px;height:2px;margin:0 auto 12px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  border-radius:2px;
+}}
 
-/* PARTICLES */
-#particles{{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}}
-.wrap{{position:relative;z-index:1}}
+/* ====== ANIMATIONS ====== */
+@keyframes fadeSlideUp{{
+  from{{opacity:0;transform:translateY(24px)}}
+  to{{opacity:1;transform:translateY(0)}}
+}}
+@keyframes fadeSlideDown{{
+  from{{opacity:0;transform:translateY(-16px)}}
+  to{{opacity:1;transform:translateY(0)}}
+}}
+@keyframes scaleIn{{
+  from{{opacity:0;transform:scale(0.92)}}
+  to{{opacity:1;transform:scale(1)}}
+}}
+.anim-up{{animation:fadeSlideUp 0.7s cubic-bezier(.4,0,.2,1) both}}
+.anim-scale{{animation:scaleIn 0.6s cubic-bezier(.4,0,.2,1) both}}
+.d1{{animation-delay:0.1s}}.d2{{animation-delay:0.2s}}.d3{{animation-delay:0.3s}}
+.d4{{animation-delay:0.4s}}.d5{{animation-delay:0.5s}}.d6{{animation-delay:0.6s}}
+.d7{{animation-delay:0.7s}}.d8{{animation-delay:0.8s}}.d9{{animation-delay:0.9s}}
+.d10{{animation-delay:1.0s}}
 
-/* ANIMATIONS */
-@keyframes fadeUp{{from{{opacity:0;transform:translateY(20px)}}to{{opacity:1;transform:translateY(0)}}}}
-.anim{{animation:fadeUp .6s ease both}}
-.d1{{animation-delay:.1s}}.d2{{animation-delay:.2s}}.d3{{animation-delay:.3s}}.d4{{animation-delay:.4s}}.d5{{animation-delay:.5s}}
-
-/* RESPONSIVE */
-@media(max-width:900px){{
+/* ====== RESPONSIVE ====== */
+@media(max-width:1024px){{
   .kpis{{grid-template-columns:repeat(2,1fr)}}
   .charts-grid{{grid-template-columns:1fr}}
-  .header{{flex-direction:column;gap:12px;text-align:center}}
-  .header-right{{text-align:center}}
 }}
-@media(max-width:500px){{
+@media(max-width:640px){{
   .kpis{{grid-template-columns:1fr}}
-  .chart-box{{height:260px}}
+  .header{{flex-direction:column;gap:14px;text-align:center;padding:18px 20px}}
+  .header-right{{text-align:center}}
+  .header-center{{order:3}}
+  .chart-box{{height:280px}}
   .bots-grid{{grid-template-columns:1fr}}
+  .wrap{{padding:16px 14px}}
+  .kpi-val{{font-size:34px}}
+  .donut-center .num{{font-size:36px}}
+  .bots-tasa{{font-size:32px}}
 }}
 </style>
 </head>
 <body>
+
+<!-- FLOATING GLOW ORBS -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- PARTICLE SYSTEM -->
 <canvas id="particles"></canvas>
+
 <div class="wrap">
 
-<!-- HEADER -->
-<div class="header anim d1">
+<!-- ====== HEADER ====== -->
+<header class="header anim-up d1">
   <div>
     <div class="logo">NETSER<span>GROUP</span></div>
-    <div class="logo-sub">Centro de Operaciones</div>
+    <div class="logo-sub" id="typingSub"></div>
   </div>
-  <div class="status-badge"><span class="status-dot"></span> Sistema Operativo</div>
+  <div class="header-center">
+    <div class="status-badge"><span class="status-dot"></span> Sistema Operativo</div>
+  </div>
   <div class="header-right">
-    <div class="clock" id="clock"></div>
-    <div>Actualizado: {D["update"]}</div>
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="update-label">Actualizado: {D["update"]}</div>
   </div>
-</div>
+</header>
 
-<!-- KPI CARDS -->
-<div class="kpis anim d2">
-  <div class="kpi">
-    <div class="kpi-accent" style="background:var(--cyan)"></div>
+<!-- ====== KPI CARDS ====== -->
+<section class="kpis">
+  <div class="kpi anim-scale d2">
+    <div class="kpi-accent" style="background:linear-gradient(90deg,var(--cyan),rgba(0,212,255,0.4))"></div>
+    <div class="kpi-glow" style="background:var(--cyan)"></div>
     <div class="kpi-icon">&#9776;</div>
-    <div class="kpi-val" style="color:var(--cyan)">{D["total"]}</div>
+    <div class="kpi-val" style="color:var(--cyan)" data-counter="{D["total"]}">0</div>
     <div class="kpi-label">Total Casos</div>
   </div>
-  <div class="kpi">
-    <div class="kpi-accent" style="background:var(--green)"></div>
+  <div class="kpi anim-scale d3">
+    <div class="kpi-accent" style="background:linear-gradient(90deg,var(--green),rgba(0,245,160,0.4))"></div>
+    <div class="kpi-glow" style="background:var(--green)"></div>
     <div class="kpi-icon">&#10003;</div>
-    <div class="kpi-val" style="color:var(--green)">{bots_ok}</div>
-    <div class="kpi-label">Bots OK</div>
+    <div class="kpi-val" style="color:var(--green)" data-counter="{bots_ok}">0</div>
+    <div class="kpi-label">Bots Operativos</div>
   </div>
-  <div class="kpi">
-    <div class="kpi-accent" style="background:var(--red)"></div>
+  <div class="kpi anim-scale d4">
+    <div class="kpi-accent" style="background:linear-gradient(90deg,var(--red),rgba(255,107,107,0.4))"></div>
+    <div class="kpi-glow" style="background:var(--red)"></div>
     <div class="kpi-icon">&#10007;</div>
-    <div class="kpi-val" style="color:var(--red)">{bots_fail}</div>
-    <div class="kpi-label">Bots Fail</div>
+    <div class="kpi-val" style="color:var(--red)" data-counter="{bots_fail}">0</div>
+    <div class="kpi-label">Bots con Falla</div>
   </div>
-  <div class="kpi">
-    <div class="kpi-accent" style="background:var(--purple)"></div>
+  <div class="kpi anim-scale d5">
+    <div class="kpi-accent" style="background:linear-gradient(90deg,var(--purple),rgba(167,139,250,0.4))"></div>
+    <div class="kpi-glow" style="background:var(--purple)"></div>
     <div class="kpi-icon">%</div>
-    <div class="kpi-val" style="color:var(--purple)">{tasa}%</div>
-    <div class="kpi-label">Tasa Exito</div>
+    <div class="kpi-val" style="color:var(--purple)" data-counter="{tasa}" data-suffix="%" data-decimal="1">0</div>
+    <div class="kpi-label">Tasa de Exito</div>
   </div>
-</div>
+</section>
 
-<!-- CHARTS -->
-<div class="section-title anim d3">Analisis de Casos</div>
-<div class="charts-grid anim d3">
-  <div class="panel">
+<!-- ====== CHARTS ====== -->
+<div class="section-title anim-up d6">Analisis de Casos por Cliente</div>
+<section class="charts-grid">
+  <div class="panel anim-up d7">
     <div class="panel-title">Casos por Cliente</div>
     <div class="chart-box"><canvas id="barChart"></canvas></div>
   </div>
-  <div class="panel" style="position:relative">
-    <div class="panel-title">Distribucion por Cliente</div>
-    <div class="donut-center"><div class="num">{D["total"]}</div><div class="lab">Total</div></div>
+  <div class="panel anim-up d8 donut-wrap">
+    <div class="panel-title">Distribucion Porcentual</div>
+    <div class="donut-center">
+      <div class="num" data-counter="{D["total"]}">0</div>
+      <div class="lab">Total Casos</div>
+    </div>
     <div class="chart-box"><canvas id="donutChart"></canvas></div>
   </div>
-</div>
+</section>
 
-<!-- BOTS -->
-<div class="section-title anim d4">Estado de Bots / Flujos Automatizados</div>
-<div class="panel anim d4">
+<!-- ====== BOTS STATUS ====== -->
+<div class="section-title anim-up d9">Estado de Bots / Flujos Automatizados</div>
+<div class="panel anim-up d10">
   <div class="bots-summary">
-    <div>
-      <div class="bots-count">{bots_ok}/{bots_total} Exitosos</div>
-      <div style="font-size:12px;color:var(--txt3)">{'Todos los flujos operando con normalidad' if bots_fail==0 else str(bots_fail)+' flujo(s) requieren atencion'}</div>
+    <div class="bots-info">
+      <div class="bots-count"><span style="color:var(--green)">{bots_ok}</span> / {bots_total} Exitosos</div>
+      <div class="bots-desc">{'Todos los flujos operando con normalidad' if bots_fail == 0 else str(bots_fail) + ' flujo(s) requieren atencion'}</div>
     </div>
-    <div class="bots-bar"><div class="bots-bar-fill" style="width:{tasa}%;background:{'var(--green)' if tasa==100 else 'var(--gold)'}"></div></div>
-    <div style="text-align:right">
-      <div class="bots-tasa" style="color:{'var(--green)' if tasa==100 else 'var(--gold)'}">{tasa}%</div>
-      <div class="bots-tasa-label">Tasa Exito</div>
+    <div class="bots-bar-wrap">
+      <div class="bots-bar">
+        <div class="bots-bar-fill" id="botsBarFill"
+             style="background:linear-gradient(90deg,{'var(--green),rgba(0,245,160,0.7)' if tasa == 100 else 'var(--gold),rgba(251,191,36,0.7)'});"
+             data-width="{tasa}"></div>
+      </div>
+    </div>
+    <div class="bots-tasa-wrap">
+      <div class="bots-tasa" style="color:{'var(--green)' if tasa == 100 else 'var(--gold)'}"
+           data-counter="{tasa}" data-suffix="%" data-decimal="1">0</div>
+      <div class="bots-tasa-label">Tasa de Exito</div>
     </div>
   </div>
   <div class="bots-grid">
@@ -245,37 +455,187 @@ body{{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(135deg
   </div>
 </div>
 
-<!-- FOOTER -->
-<div class="footer anim d5">NetserGroup &copy; 2026 &mdash; Humberto Henriquez</div>
+<!-- ====== FOOTER ====== -->
+<footer class="footer anim-up" style="animation-delay:1.1s">
+  <div class="footer-line"></div>
+  NetserGroup &copy; 2026 &mdash; Humberto Henriquez
+</footer>
 
-</div>
+</div><!-- /wrap -->
 
 <script>
-// Clock
-(function tick(){{
-  var d=new Date();
-  document.getElementById('clock').textContent=d.toLocaleTimeString('es-SV',{{hour:'2-digit',minute:'2-digit',second:'2-digit'}});
-  setTimeout(tick,1000);
+/* ================================================================
+   NetserGroup Dashboard v4.0 — Ultra Futuristic JS
+   ================================================================ */
+
+/* ---------- 1. LIVE CLOCK ---------- */
+(function clockModule() {{
+  function tick() {{
+    var now = new Date();
+    var el = document.getElementById('clock');
+    if (el) el.textContent = now.toLocaleTimeString('es-SV', {{
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    }});
+    setTimeout(tick, 1000);
+  }}
+  tick();
 }})();
 
-// Particles
-(function(){{
-  var c=document.getElementById('particles'),x=c.getContext('2d');
-  var w,h,pts=[];
-  function resize(){{w=c.width=window.innerWidth;h=c.height=window.innerHeight;}}
-  resize();window.addEventListener('resize',resize);
-  for(var i=0;i<60;i++)pts.push({{x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.5+.5}});
-  function draw(){{
-    x.clearRect(0,0,w,h);
-    for(var i=0;i<pts.length;i++){{
-      var p=pts[i];
-      p.x+=p.vx;p.y+=p.vy;
-      if(p.x<0||p.x>w)p.vx*=-1;
-      if(p.y<0||p.y>h)p.vy*=-1;
-      x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fillStyle='rgba(0,212,255,0.15)';x.fill();
-      for(var j=i+1;j<pts.length;j++){{
-        var q=pts[j],dx=p.x-q.x,dy=p.y-q.y,dist=Math.sqrt(dx*dx+dy*dy);
-        if(dist<120){{x.beginPath();x.moveTo(p.x,p.y);x.lineTo(q.x,q.y);x.strokeStyle='rgba(0,212,255,'+(0.06*(1-dist/120))+')';x.stroke();}}
+/* ---------- 2. TYPING EFFECT ---------- */
+(function typingModule() {{
+  var text = 'Centro de Operaciones';
+  var el = document.getElementById('typingSub');
+  if (!el) return;
+  var i = 0;
+  function typeChar() {{
+    if (i <= text.length) {{
+      el.textContent = text.substring(0, i);
+      i++;
+      setTimeout(typeChar, 65);
+    }}
+  }}
+  setTimeout(typeChar, 800);
+}})();
+
+/* ---------- 3. ANIMATED COUNTERS ---------- */
+(function counterModule() {{
+  var els = document.querySelectorAll('[data-counter]');
+  var started = new Set();
+
+  function animateCounter(el) {{
+    var target = parseFloat(el.getAttribute('data-counter'));
+    var suffix = el.getAttribute('data-suffix') || '';
+    var hasDecimal = el.getAttribute('data-decimal') === '1';
+    var duration = 1800;
+    var start = performance.now();
+
+    function update(now) {{
+      var elapsed = now - start;
+      var progress = Math.min(elapsed / duration, 1);
+      /* easeOutQuart */
+      var ease = 1 - Math.pow(1 - progress, 4);
+      var current = ease * target;
+      el.textContent = (hasDecimal ? current.toFixed(1) : Math.round(current)) + suffix;
+      if (progress < 1) requestAnimationFrame(update);
+    }}
+    requestAnimationFrame(update);
+  }}
+
+  var observer = new IntersectionObserver(function(entries) {{
+    entries.forEach(function(entry) {{
+      if (entry.isIntersecting && !started.has(entry.target)) {{
+        started.add(entry.target);
+        setTimeout(function() {{ animateCounter(entry.target); }}, 400);
+      }}
+    }});
+  }}, {{ threshold: 0.3 }});
+
+  els.forEach(function(el) {{ observer.observe(el); }});
+}})();
+
+/* ---------- 4. BOTS PROGRESS BAR ANIMATION ---------- */
+(function botsBarModule() {{
+  var bar = document.getElementById('botsBarFill');
+  if (!bar) return;
+  var targetWidth = bar.getAttribute('data-width');
+  setTimeout(function() {{
+    bar.style.width = targetWidth + '%';
+  }}, 600);
+}})();
+
+/* ---------- 5. PARTICLE SYSTEM WITH MOUSE INTERACTION ---------- */
+(function particleModule() {{
+  var canvas = document.getElementById('particles');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W, H;
+  var mouseX = -9999, mouseY = -9999;
+  var particles = [];
+  var PARTICLE_COUNT = 80;
+  var CONNECT_DIST = 140;
+  var MOUSE_RADIUS = 120;
+
+  function resize() {{
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }}
+  resize();
+  window.addEventListener('resize', resize);
+
+  document.addEventListener('mousemove', function(e) {{
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  }});
+  document.addEventListener('mouseleave', function() {{
+    mouseX = -9999;
+    mouseY = -9999;
+  }});
+
+  for (var i = 0; i < PARTICLE_COUNT; i++) {{
+    particles.push({{
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      r: Math.random() * 1.8 + 0.5,
+      baseAlpha: Math.random() * 0.15 + 0.08
+    }});
+  }}
+
+  function draw() {{
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < particles.length; i++) {{
+      var p = particles[i];
+
+      /* Mouse repulsion */
+      var dmx = p.x - mouseX;
+      var dmy = p.y - mouseY;
+      var distMouse = Math.sqrt(dmx * dmx + dmy * dmy);
+      if (distMouse < MOUSE_RADIUS && distMouse > 0) {{
+        var force = (MOUSE_RADIUS - distMouse) / MOUSE_RADIUS * 0.8;
+        p.x += (dmx / distMouse) * force;
+        p.y += (dmy / distMouse) * force;
+      }}
+
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0 || p.x > W) p.vx *= -1;
+      if (p.y < 0 || p.y > H) p.vy *= -1;
+      p.x = Math.max(0, Math.min(W, p.x));
+      p.y = Math.max(0, Math.min(H, p.y));
+
+      /* Draw particle */
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,212,255,' + p.baseAlpha + ')';
+      ctx.fill();
+
+      /* Connect nearby particles */
+      for (var j = i + 1; j < particles.length; j++) {{
+        var q = particles[j];
+        var dx = p.x - q.x;
+        var dy = p.y - q.y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < CONNECT_DIST) {{
+          var alpha = 0.07 * (1 - dist / CONNECT_DIST);
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+          ctx.strokeStyle = 'rgba(0,212,255,' + alpha + ')';
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }}
+      }}
+
+      /* Connect to mouse */
+      if (distMouse < CONNECT_DIST * 1.5) {{
+        var mAlpha = 0.12 * (1 - distMouse / (CONNECT_DIST * 1.5));
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(mouseX, mouseY);
+        ctx.strokeStyle = 'rgba(0,212,255,' + mAlpha + ')';
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
       }}
     }}
     requestAnimationFrame(draw);
@@ -283,50 +643,153 @@ body{{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(135deg
   draw();
 }})();
 
-// Charts
-(function(){{
-  var labels={chart_labels};
-  var values={chart_values};
-  var colors=['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8','#fb923c'];
-  var bg=labels.map(function(_,i){{return colors[i%colors.length]}});
+/* ---------- 6. CHART.JS CHARTS ---------- */
+(function chartsModule() {{
+  var labels = {chart_labels};
+  var values = {chart_values};
+  var total = {D["total"]};
+  var colors = ['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8','#fb923c'];
+  var bgColors = labels.map(function(_, i) {{ return colors[i % colors.length] + 'CC'; }});
+  var borderColors = labels.map(function(_, i) {{ return colors[i % colors.length]; }});
 
-  Chart.defaults.color='#94a3b8';
-  Chart.defaults.font.family="'Inter',sans-serif";
-  Chart.defaults.font.size=11;
+  Chart.defaults.color = '#94a3b8';
+  Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+  Chart.defaults.font.size = 11;
 
-  // Bar Chart
-  new Chart(document.getElementById('barChart'),{{
-    type:'bar',
-    data:{{labels:labels,datasets:[{{data:values,backgroundColor:bg.map(function(c){{return c+'CC'}}),borderColor:bg,borderWidth:1,borderRadius:6,barPercentage:.7}}]}},
-    options:{{
-      indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      animation:{{duration:1200,easing:'easeOutQuart'}},
-      plugins:{{legend:{{display:false}},tooltip:{{
-        backgroundColor:'rgba(10,14,26,0.95)',borderColor:'rgba(0,212,255,0.2)',borderWidth:1,cornerRadius:8,padding:12,
-        callbacks:{{label:function(c){{var t={D["total"]};return c.parsed.x+' casos ('+(t>0?Math.round(c.parsed.x/t*100):0)+'%)'}}}}
-      }}}},
-      scales:{{
-        x:{{grid:{{color:'rgba(0,212,255,0.06)'}},beginAtZero:true,ticks:{{font:{{size:10}}}}}},
-        y:{{grid:{{display:false}},ticks:{{font:{{size:11,weight:'500'}},color:'#cbd5e1'}}}}
+  /* --- BAR CHART --- */
+  var barCtx = document.getElementById('barChart');
+  var barChart = new Chart(barCtx, {{
+    type: 'bar',
+    data: {{
+      labels: labels,
+      datasets: [{{
+        data: values,
+        backgroundColor: bgColors,
+        borderColor: borderColors,
+        borderWidth: 1,
+        borderRadius: 8,
+        barPercentage: 0.7,
+        categoryPercentage: 0.85
+      }}]
+    }},
+    options: {{
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {{
+        duration: 1500,
+        easing: 'easeOutQuart',
+        delay: function(context) {{
+          return context.dataIndex * 120;
+        }}
+      }},
+      plugins: {{
+        legend: {{ display: false }},
+        tooltip: {{
+          backgroundColor: 'rgba(6,10,20,0.95)',
+          borderColor: 'rgba(0,212,255,0.25)',
+          borderWidth: 1,
+          cornerRadius: 10,
+          padding: 14,
+          titleFont: {{ weight: '600', size: 12 }},
+          bodyFont: {{ size: 11 }},
+          callbacks: {{
+            label: function(ctx) {{
+              var pct = total > 0 ? Math.round(ctx.parsed.x / total * 100) : 0;
+              return ctx.parsed.x + ' casos (' + pct + '%)';
+            }}
+          }}
+        }}
+      }},
+      scales: {{
+        x: {{
+          grid: {{ color: 'rgba(0,212,255,0.04)', lineWidth: 1 }},
+          border: {{ color: 'rgba(0,212,255,0.08)' }},
+          beginAtZero: true,
+          ticks: {{ font: {{ size: 10 }}, color: '#64748b' }}
+        }},
+        y: {{
+          grid: {{ display: false }},
+          border: {{ display: false }},
+          ticks: {{ font: {{ size: 11, weight: '500' }}, color: '#cbd5e1', padding: 8 }}
+        }}
       }}
     }}
   }});
 
-  // Donut Chart
-  new Chart(document.getElementById('donutChart'),{{
-    type:'doughnut',
-    data:{{labels:labels,datasets:[{{data:values,backgroundColor:bg.map(function(c){{return c+'CC'}}),borderColor:'rgba(15,23,42,0.8)',borderWidth:2,hoverBorderColor:bg,hoverOffset:8}}]}},
-    options:{{
-      responsive:true,maintainAspectRatio:false,cutout:'65%',
-      animation:{{duration:1200,easing:'easeOutQuart'}},
-      plugins:{{
-        legend:{{position:'bottom',labels:{{padding:12,usePointStyle:true,pointStyle:'circle',font:{{size:10}},color:'#cbd5e1'}}}},
-        tooltip:{{
-          backgroundColor:'rgba(10,14,26,0.95)',borderColor:'rgba(0,212,255,0.2)',borderWidth:1,cornerRadius:8,padding:12,
-          callbacks:{{label:function(c){{var t={D["total"]};return ' '+c.label+': '+c.parsed+' ('+(t>0?Math.round(c.parsed/t*100):0)+'%)'}}}}
+  /* --- DONUT CHART --- */
+  var donutCtx = document.getElementById('donutChart');
+  var donutChart = new Chart(donutCtx, {{
+    type: 'doughnut',
+    data: {{
+      labels: labels,
+      datasets: [{{
+        data: values,
+        backgroundColor: bgColors,
+        borderColor: 'rgba(12,18,34,0.9)',
+        borderWidth: 3,
+        hoverBorderColor: borderColors,
+        hoverOffset: 12
+      }}]
+    }},
+    options: {{
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '62%',
+      animation: {{
+        duration: 1500,
+        easing: 'easeOutQuart',
+        animateRotate: true,
+        animateScale: true
+      }},
+      plugins: {{
+        legend: {{
+          position: 'bottom',
+          labels: {{
+            padding: 14,
+            usePointStyle: true,
+            pointStyle: 'circle',
+            font: {{ size: 10, weight: '500' }},
+            color: '#cbd5e1'
+          }}
+        }},
+        tooltip: {{
+          backgroundColor: 'rgba(6,10,20,0.95)',
+          borderColor: 'rgba(0,212,255,0.25)',
+          borderWidth: 1,
+          cornerRadius: 10,
+          padding: 14,
+          titleFont: {{ weight: '600', size: 12 }},
+          bodyFont: {{ size: 11 }},
+          callbacks: {{
+            label: function(ctx) {{
+              var pct = total > 0 ? Math.round(ctx.parsed / total * 100) : 0;
+              return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+            }}
+          }}
         }}
       }}
     }}
+  }});
+
+  /* --- CROSS-CHART HOVER HIGHLIGHT --- */
+  barCtx.addEventListener('mousemove', function(e) {{
+    var activeElements = barChart.getElementsAtEventForMode(e, 'nearest', {{ intersect: true }}, false);
+    if (activeElements.length > 0) {{
+      var idx = activeElements[0].index;
+      donutChart.setActiveElements([{{ datasetIndex: 0, index: idx }}]);
+      donutChart.tooltip.setActiveElements([{{ datasetIndex: 0, index: idx }}]);
+      donutChart.update('none');
+    }} else {{
+      donutChart.setActiveElements([]);
+      donutChart.tooltip.setActiveElements([]);
+      donutChart.update('none');
+    }}
+  }});
+  barCtx.addEventListener('mouseleave', function() {{
+    donutChart.setActiveElements([]);
+    donutChart.tooltip.setActiveElements([]);
+    donutChart.update('none');
   }});
 }})();
 </script>
@@ -334,17 +797,22 @@ body{{font-family:'Inter',system-ui,sans-serif;background:linear-gradient(135deg
 </html>'''
     return html
 
+
 def main():
-    print("=" * 50)
-    print("  NetserGroup Dashboard Generator v3.0")
-    print("=" * 50)
+    print("=" * 56)
+    print("  NetserGroup Dashboard Generator v4.0 — Ultra Futuristic")
+    print("=" * 56)
     D = read_data()
-    print(f"  Total: {D['total']} casos | Bots: {D['botsOK']}/{D['botsOK']+D['botsFail']} OK")
+    bots_total = D['botsOK'] + D['botsFail']
+    print(f"  Total: {D['total']} casos | Bots: {D['botsOK']}/{bots_total} OK")
     html = generate_html(D)
     with open(OUTPUT, "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"  index.html generado ({len(html):,} bytes)")
+    size_kb = len(html) / 1024
+    print(f"  index.html generado ({len(html):,} bytes / {size_kb:.1f} KB)")
     print(f"  Archivo: {OUTPUT}")
+    print("=" * 56)
+
 
 if __name__ == "__main__":
     main()
