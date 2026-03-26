@@ -6,6 +6,7 @@
 <title>NetserGroup &mdash; Centro de Operaciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 /* ====== RESET & VARS ====== */
 *{margin:0;padding:0;box-sizing:border-box}
@@ -577,14 +578,17 @@ body::before{
   var labels = ["CTDI", "Lenovo", "HP Comercial", "Netapp", "Lexmark"];
   var values = [28, 8, 5, 2, 1];
   var total = 44;
-  var colors = ['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8','#fb923c'];
-  var bgColors = labels.map(function(_, i) { return colors[i % colors.length]; });
-  var borderColors = labels.map(function(_, i) { return colors[i % colors.length]; });
+  var darkColors = ['#0c4a6e','#064e3b','#78350f','#3b0764','#7f1d1d','#0e4a7a','#065f46','#831843','#312e81','#7c2d12'];
+  var brightColors = ['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8','#fb923c'];
+  var bgColors = labels.map(function(_, i) { return darkColors[i % darkColors.length]; });
+  var borderColors = labels.map(function(_, i) { return brightColors[i % brightColors.length]; });
+  var labelColors = labels.map(function(_, i) { return brightColors[i % brightColors.length]; });
 
   Chart.defaults.color = '#cbd5e1';
   Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
   Chart.defaults.font.size = 12;
   Chart.defaults.font.weight = 500;
+  Chart.register(ChartDataLabels);
 
   /* --- BAR CHART --- */
   var barCtx = document.getElementById('barChart');
@@ -595,12 +599,12 @@ body::before{
       datasets: [{
         data: values,
         backgroundColor: bgColors,
-        borderColor: bgColors,
+        borderColor: borderColors,
         borderWidth: 2,
         borderRadius: 10,
         barPercentage: 0.75,
         categoryPercentage: 0.85,
-        hoverBackgroundColor: bgColors.map(function(c) { return c; }),
+        hoverBackgroundColor: borderColors,
         hoverBorderWidth: 3
       }]
     },
@@ -617,14 +621,22 @@ body::before{
       },
       plugins: {
         legend: { display: false },
+        datalabels: {
+          anchor: 'end',
+          align: 'right',
+          offset: 6,
+          color: function(ctx) { return labelColors[ctx.dataIndex % labelColors.length]; },
+          font: { size: 14, weight: '700' },
+          formatter: function(value) { return value > 0 ? value : ''; }
+        },
         tooltip: {
           backgroundColor: 'rgba(6,10,20,0.95)',
           borderColor: 'rgba(0,212,255,0.25)',
           borderWidth: 1,
           cornerRadius: 10,
           padding: 14,
-          titleFont: { weight: '600', size: 12 },
-          bodyFont: { size: 11 },
+          titleFont: { weight: '600', size: 13 },
+          bodyFont: { size: 12 },
           callbacks: {
             label: function(ctx) {
               var pct = total > 0 ? Math.round(ctx.parsed.x / total * 100) : 0;
@@ -658,12 +670,13 @@ body::before{
       datasets: [{
         data: values,
         backgroundColor: bgColors,
-        borderColor: '#060a14',
-        borderWidth: 4,
+        borderColor: borderColors,
+        borderWidth: 2,
+        hoverBackgroundColor: borderColors,
         hoverBorderColor: borderColors,
         hoverBorderWidth: 3,
         hoverOffset: 18,
-        spacing: 2
+        spacing: 3
       }]
     },
     options: {
@@ -677,6 +690,17 @@ body::before{
         animateScale: true
       },
       plugins: {
+        datalabels: {
+          color: function(ctx) { return labelColors[ctx.dataIndex % labelColors.length]; },
+          font: { size: 13, weight: '700' },
+          textShadowColor: 'rgba(0,0,0,0.8)',
+          textShadowBlur: 4,
+          formatter: function(value) {
+            var pct = total > 0 ? Math.round(value / total * 100) : 0;
+            return pct >= 5 ? value + '\n' + pct + '%' : '';
+          },
+          textAlign: 'center'
+        },
         legend: {
           position: 'bottom',
           labels: {
