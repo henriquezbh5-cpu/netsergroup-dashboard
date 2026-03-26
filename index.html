@@ -105,7 +105,7 @@ body::before{
   border-radius:50%;filter:blur(40px);opacity:0.12;pointer-events:none;
 }
 .kpi-icon{position:absolute;top:18px;right:20px;font-size:20px;opacity:0.3}
-.kpi-val{font-size:42px;font-weight:800;line-height:1;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi-val{font-size:48px;font-weight:800;line-height:1;margin-top:4px;font-variant-numeric:tabular-nums;text-shadow:0 0 20px currentColor,0 0 40px currentColor}
 .kpi-label{
   font-size:10px;color:var(--txt3);font-weight:600;letter-spacing:1.5px;
   text-transform:uppercase;margin-top:10px;
@@ -140,7 +140,7 @@ body::before{
   content:'';width:6px;height:6px;border-radius:50%;
   background:var(--cyan);box-shadow:0 0 6px var(--cyan);
 }
-.chart-box{position:relative;height:340px}
+.chart-box{position:relative;height:380px}
 .donut-wrap{position:relative}
 .donut-center{
   position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);
@@ -200,7 +200,7 @@ body::before{
   0%{background-position:200% center}
   100%{background-position:-200% center}
 }
-.bot-pill.ok .bot-icon{color:var(--green);text-shadow:0 0 10px rgba(0,245,160,0.6)}
+.bot-pill.ok .bot-icon{color:var(--green);text-shadow:0 0 12px rgba(0,245,160,0.8),0 0 24px rgba(0,245,160,0.4)}
 .bot-pill.fail .bot-icon{color:var(--red);text-shadow:0 0 10px rgba(255,107,107,0.6)}
 .bot-icon{font-size:16px;font-weight:700;width:26px;text-align:center}
 .bot-name{flex:1;font-size:12px;font-weight:500;color:var(--txt2)}
@@ -578,12 +578,13 @@ body::before{
   var values = [28, 8, 5, 2, 1];
   var total = 44;
   var colors = ['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8','#fb923c'];
-  var bgColors = labels.map(function(_, i) { return colors[i % colors.length] + 'CC'; });
+  var bgColors = labels.map(function(_, i) { return colors[i % colors.length]; });
   var borderColors = labels.map(function(_, i) { return colors[i % colors.length]; });
 
-  Chart.defaults.color = '#94a3b8';
+  Chart.defaults.color = '#cbd5e1';
   Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
-  Chart.defaults.font.size = 11;
+  Chart.defaults.font.size = 12;
+  Chart.defaults.font.weight = 500;
 
   /* --- BAR CHART --- */
   var barCtx = document.getElementById('barChart');
@@ -594,11 +595,13 @@ body::before{
       datasets: [{
         data: values,
         backgroundColor: bgColors,
-        borderColor: borderColors,
-        borderWidth: 1,
-        borderRadius: 8,
-        barPercentage: 0.7,
-        categoryPercentage: 0.85
+        borderColor: bgColors,
+        borderWidth: 2,
+        borderRadius: 10,
+        barPercentage: 0.75,
+        categoryPercentage: 0.85,
+        hoverBackgroundColor: bgColors.map(function(c) { return c; }),
+        hoverBorderWidth: 3
       }]
     },
     options: {
@@ -632,15 +635,15 @@ body::before{
       },
       scales: {
         x: {
-          grid: { color: 'rgba(0,212,255,0.04)', lineWidth: 1 },
-          border: { color: 'rgba(0,212,255,0.08)' },
+          grid: { color: 'rgba(0,212,255,0.08)', lineWidth: 1 },
+          border: { color: 'rgba(0,212,255,0.15)' },
           beginAtZero: true,
-          ticks: { font: { size: 10 }, color: '#64748b' }
+          ticks: { font: { size: 11, weight: '500' }, color: '#94a3b8' }
         },
         y: {
           grid: { display: false },
           border: { display: false },
-          ticks: { font: { size: 11, weight: '500' }, color: '#cbd5e1', padding: 8 }
+          ticks: { font: { size: 13, weight: '600' }, color: '#e2e8f0', padding: 10 }
         }
       }
     }
@@ -655,16 +658,18 @@ body::before{
       datasets: [{
         data: values,
         backgroundColor: bgColors,
-        borderColor: 'rgba(12,18,34,0.9)',
-        borderWidth: 3,
+        borderColor: '#060a14',
+        borderWidth: 4,
         hoverBorderColor: borderColors,
-        hoverOffset: 12
+        hoverBorderWidth: 3,
+        hoverOffset: 18,
+        spacing: 2
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '62%',
+      cutout: '58%',
       animation: {
         duration: 1500,
         easing: 'easeOutQuart',
@@ -675,11 +680,12 @@ body::before{
         legend: {
           position: 'bottom',
           labels: {
-            padding: 14,
+            padding: 16,
             usePointStyle: true,
             pointStyle: 'circle',
-            font: { size: 10, weight: '500' },
-            color: '#cbd5e1'
+            pointStyleWidth: 12,
+            font: { size: 12, weight: '600' },
+            color: '#e2e8f0'
           }
         },
         tooltip: {
