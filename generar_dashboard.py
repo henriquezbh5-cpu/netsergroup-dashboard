@@ -989,21 +989,13 @@ Chart.defaults.font.size = 11;
 
   var barCtx = document.getElementById('barChart').getContext('2d');
 
-  // Create gradient for each bar
-  var barGradients = bgColors.map(function(color, i) {{
-    var gradient = barCtx.createLinearGradient(0, 0, barCtx.canvas.width, 0);
-    gradient.addColorStop(0, color + 'CC');
-    gradient.addColorStop(1, color + '55');
-    return gradient;
-  }});
-
   barChartInstance = new Chart(barCtx, {{
     type: 'bar',
     data: {{
       labels: labels,
       datasets: [{{
         data: values,
-        backgroundColor: barGradients,
+        backgroundColor: bgColors.map(function(c) {{ return c + 'CC'; }}),
         borderColor: bgColors.map(function(c) {{ return c + '80'; }}),
         borderWidth: 1,
         borderRadius: 8,
@@ -1121,7 +1113,7 @@ Chart.defaults.font.size = 11;
     doughnutInstance.update();
 
     // Also highlight bar
-    var barBg = barGradients.map(function(g, i) {{
+    var barBg = bgColors.map(function(c) {{ return c + 'CC'; }}).map(function(g, i) {{
       if (i === activeIdx) return g;
       return bgColors[i] + '20';
     }});
@@ -1132,7 +1124,7 @@ Chart.defaults.font.size = 11;
     setTimeout(function() {{
       doughnutInstance.data.datasets[0].backgroundColor = bgColors.map(function(c) {{ return c + 'CC'; }});
       doughnutInstance.update();
-      barChartInstance.data.datasets[0].backgroundColor = barGradients;
+      barChartInstance.data.datasets[0].backgroundColor = bgColors.map(function(c) {{ return c + 'CC'; }});
       barChartInstance.update();
     }}, 3000);
   }}
