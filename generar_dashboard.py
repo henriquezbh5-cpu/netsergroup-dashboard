@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-NetserGroup Dashboard Generator v4.0 — Ultra Futuristic
+NetserGroup Dashboard Generator v5.0 — Ultimate
 Lee Reporte_NetserGroup_Final.xlsx y genera index.html
-con efectos de particulas, glassmorphism, animaciones y estilo cyberpunk.
+con particulas, glassmorphism, animaciones continuas, datalabels y estilo cyberpunk.
 """
 import json, os, sys
 from datetime import datetime
@@ -21,6 +21,31 @@ CLIENTS = ["HP Comercial","HPE","Payless","Netapp","Lexmark","Lexmark Kit","CTDI
 BOTS = ["BackUp Mobility","Cierre POs","Cierre Alpha","Cierre HPCM","Tasas Cambio","Encuestas Dell",
         "Respaldo Invoice","Cierre Residencias","Receiving Lab","Reporte Inv HP","HPCM Cenam",
         "HPCM Chile","Licencias FSM","Regularizacion Mobility"]
+
+CLIENT_ICONS = {
+    "HP Comercial": "&#128424;",
+    "HPE": "&#128424;",
+    "Payless": "&#128722;",
+    "Netapp": "&#9729;",
+    "Lexmark": "&#128424;",
+    "Lexmark Kit": "&#128424;",
+    "CTDI": "&#128295;",
+    "Monthly Fee": "&#36;",
+    "Lenovo": "&#128187;",
+}
+
+# Accent colors per client (for card top lines and progress bars)
+CLIENT_COLORS = {
+    "HP Comercial": "#00d4ff",
+    "HPE": "#38bdf8",
+    "Payless": "#fbbf24",
+    "Netapp": "#a78bfa",
+    "Lexmark": "#00f5a0",
+    "Lexmark Kit": "#34d399",
+    "CTDI": "#ff6b6b",
+    "Monthly Fee": "#f472b6",
+    "Lenovo": "#818cf8",
+}
 
 
 def safe_int(v):
@@ -56,20 +81,40 @@ def read_data():
 def generate_html(D):
     # Active clients sorted by cases desc
     active = sorted([(c, v) for c, v in D["cases"].items() if v > 0], key=lambda x: -x[1])
-    all_clients = sorted(D["cases"].items(), key=lambda x: -x[1])
+    all_sorted = sorted(D["cases"].items(), key=lambda x: -x[1])
     bots_ok = D["botsOK"]
     bots_fail = D["botsFail"]
     bots_total = bots_ok + bots_fail
     tasa = round(bots_ok / bots_total * 100, 1) if bots_total > 0 else 0
+    total = D["total"]
 
     # JSON data for charts
     chart_labels = json.dumps([c for c, _ in active])
     chart_values = json.dumps([v for _, v in active])
 
+    # Build client cards HTML
+    client_cards_html = ""
+    for idx, (name, val) in enumerate(all_sorted):
+        pct = round(val / total * 100, 1) if total > 0 else 0
+        icon = CLIENT_ICONS.get(name, "&#128196;")
+        color = CLIENT_COLORS.get(name, "#00d4ff")
+        delay = round(0.08 * idx, 2)
+        change_color = "var(--green)" if val > 0 else "var(--txt3)"
+        client_cards_html += (
+            f'<div class="client-card anim-up" style="animation-delay:{delay}s">'
+            f'  <div class="client-accent" style="background:linear-gradient(90deg,{color},{color}88)"></div>'
+            f'  <div class="client-pct" style="color:{color}">{pct}%</div>'
+            f'  <div class="client-icon">{icon}</div>'
+            f'  <div class="client-val" style="color:{color}">{val}</div>'
+            f'  <div class="client-name">{name}</div>'
+            f'  <div class="client-change" style="color:{change_color}">+{val}</div>'
+            f'  <div class="client-bar"><div class="client-bar-fill" style="width:{pct}%;background:{color}"></div></div>'
+            f'</div>\n'
+        )
+
     # Bot grid HTML
     bot_pills = ""
-    idx = 0
-    for name, ok in D["bots"].items():
+    for idx, (name, ok) in enumerate(D["bots"].items()):
         cls = "ok" if ok else "fail"
         icon = "&#10003;" if ok else "&#10007;"
         status_text = "OK" if ok else "FAIL"
@@ -81,7 +126,6 @@ def generate_html(D):
             f'<span class="bot-tag {cls}">{status_text}</span>'
             f'</div>\n'
         )
-        idx += 1
 
     html = f'''<!DOCTYPE html>
 <html lang="es">
@@ -91,6 +135,7 @@ def generate_html(D):
 <title>NetserGroup &mdash; Centro de Operaciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 /* ====== RESET & VARS ====== */
 *{{margin:0;padding:0;box-sizing:border-box}}
@@ -149,6 +194,8 @@ body::before{{
   50%{{left:100%}}
   100%{{left:100%}}
 }}
+.header-left{{display:flex;align-items:center;gap:16px}}
+.logo-svg{{flex-shrink:0}}
 .logo{{font-size:26px;font-weight:800;letter-spacing:3px;text-shadow:0 0 20px rgba(0,212,255,0.3)}}
 .logo span{{color:var(--cyan);text-shadow:0 0 30px rgba(0,212,255,0.5)}}
 .logo-sub{{font-size:12px;color:var(--txt3);margin-top:4px;letter-spacing:1px;min-height:1.2em}}
@@ -206,16 +253,57 @@ body::before{{
   content:'';width:4px;height:24px;background:linear-gradient(180deg,var(--cyan),rgba(0,212,255,0.3));
   border-radius:4px;box-shadow:0 0 8px rgba(0,212,255,0.3);
 }}
+.section-badge{{
+  font-size:10px;font-weight:600;color:var(--cyan);
+  background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);
+  border-radius:12px;padding:3px 12px;letter-spacing:0.5px;
+}}
 
-/* ====== CHART PANELS ====== */
-.charts-grid{{display:grid;grid-template-columns:1fr 1fr;gap:18px}}
-.panel{{
+/* ====== CLIENTS SECTION (CARDS + DONUT) ====== */
+.clients-layout{{display:grid;grid-template-columns:1fr 400px;gap:24px;align-items:start}}
+.clients-grid{{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+}}
+.client-card{{
+  background:var(--card);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--border);border-radius:14px;
+  padding:18px 20px 14px;position:relative;overflow:hidden;
+  transition:all .35s cubic-bezier(.4,0,.2,1);cursor:default;
+}}
+.client-card:hover{{
+  border-color:var(--border-hover);transform:translateY(-3px);
+  box-shadow:0 8px 30px rgba(0,0,0,0.3),0 0 20px rgba(0,212,255,0.05);
+}}
+.client-accent{{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}}
+.client-pct{{position:absolute;top:14px;right:16px;font-size:11px;font-weight:700;opacity:0.7}}
+.client-icon{{font-size:22px;margin-bottom:6px;opacity:0.5}}
+.client-val{{font-size:32px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}}
+.client-name{{font-size:11px;color:var(--txt3);font-weight:500;margin-top:6px;letter-spacing:0.3px}}
+.client-change{{
+  font-size:10px;font-weight:600;margin-top:4px;
+}}
+.client-bar{{
+  height:4px;background:rgba(255,255,255,0.04);border-radius:4px;
+  margin-top:10px;overflow:hidden;position:relative;
+}}
+.client-bar-fill{{
+  height:100%;border-radius:4px;transition:width 1.5s cubic-bezier(.4,0,.2,1);
+  position:relative;
+}}
+.client-bar-fill::after{{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.25) 50%,transparent 100%);
+  animation:barShimmer 2s ease-in-out infinite;
+}}
+
+/* ====== DONUT PANEL ====== */
+.donut-panel{{
   background:var(--card);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
   border:1px solid var(--border);border-radius:16px;
-  padding:24px 28px;
+  padding:24px 28px;position:relative;
   transition:all .35s cubic-bezier(.4,0,.2,1);
 }}
-.panel:hover{{border-color:var(--border-hover);box-shadow:0 8px 30px rgba(0,0,0,0.25)}}
+.donut-panel:hover{{border-color:var(--border-hover);box-shadow:0 8px 30px rgba(0,0,0,0.25)}}
 .panel-title{{
   font-size:11px;font-weight:700;color:var(--txt2);letter-spacing:1.5px;
   text-transform:uppercase;margin-bottom:18px;
@@ -228,11 +316,14 @@ body::before{{
 .chart-box{{position:relative;height:340px}}
 .donut-wrap{{position:relative}}
 .donut-center{{
-  position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);
+  position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);
   text-align:center;pointer-events:none;z-index:5;
 }}
 .donut-center .num{{font-size:48px;font-weight:800;color:var(--cyan);text-shadow:0 0 20px rgba(0,212,255,0.3)}}
 .donut-center .lab{{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:2px;margin-top:2px}}
+
+/* ====== HIDDEN BAR CHART ====== */
+.bar-hidden{{display:none}}
 
 /* ====== BOTS SECTION ====== */
 .bots-summary{{
@@ -319,10 +410,6 @@ body::before{{
   from{{opacity:0;transform:translateY(24px)}}
   to{{opacity:1;transform:translateY(0)}}
 }}
-@keyframes fadeSlideDown{{
-  from{{opacity:0;transform:translateY(-16px)}}
-  to{{opacity:1;transform:translateY(0)}}
-}}
 @keyframes scaleIn{{
   from{{opacity:0;transform:scale(0.92)}}
   to{{opacity:1;transform:scale(1)}}
@@ -335,13 +422,19 @@ body::before{{
 .d10{{animation-delay:1.0s}}
 
 /* ====== RESPONSIVE ====== */
+@media(max-width:1200px){{
+  .clients-layout{{grid-template-columns:1fr}}
+  .clients-grid{{grid-template-columns:repeat(3,1fr)}}
+}}
 @media(max-width:1024px){{
   .kpis{{grid-template-columns:repeat(2,1fr)}}
-  .charts-grid{{grid-template-columns:1fr}}
+  .clients-grid{{grid-template-columns:repeat(2,1fr)}}
 }}
 @media(max-width:640px){{
   .kpis{{grid-template-columns:1fr}}
+  .clients-grid{{grid-template-columns:1fr}}
   .header{{flex-direction:column;gap:14px;text-align:center;padding:18px 20px}}
+  .header-left{{flex-direction:column;align-items:center}}
   .header-right{{text-align:center}}
   .header-center{{order:3}}
   .chart-box{{height:280px}}
@@ -350,6 +443,7 @@ body::before{{
   .kpi-val{{font-size:34px}}
   .donut-center .num{{font-size:36px}}
   .bots-tasa{{font-size:32px}}
+  .client-val{{font-size:26px}}
 }}
 </style>
 </head>
@@ -367,9 +461,24 @@ body::before{{
 
 <!-- ====== HEADER ====== -->
 <header class="header anim-up d1">
-  <div>
-    <div class="logo">NETSER<span>GROUP</span></div>
-    <div class="logo-sub" id="typingSub"></div>
+  <div class="header-left">
+    <svg class="logo-svg" width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="24" r="6" fill="#00d4ff" opacity="0.9"/>
+      <circle cx="24" cy="24" r="6" fill="#00d4ff" filter="url(#glow)"/>
+      <ellipse cx="24" cy="24" rx="18" ry="7" stroke="#00d4ff" stroke-width="1.2" opacity="0.5" transform="rotate(-30 24 24)"/>
+      <ellipse cx="24" cy="24" rx="18" ry="7" stroke="#00d4ff" stroke-width="1.2" opacity="0.5" transform="rotate(30 24 24)"/>
+      <ellipse cx="24" cy="24" rx="18" ry="7" stroke="#00d4ff" stroke-width="1.2" opacity="0.5" transform="rotate(90 24 24)"/>
+      <defs>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+    </svg>
+    <div>
+      <div class="logo">NETSER<span>GROUP</span></div>
+      <div class="logo-sub" id="typingSub"></div>
+    </div>
   </div>
   <div class="header-center">
     <div class="status-badge"><span class="status-dot"></span> Sistema Operativo</div>
@@ -386,7 +495,7 @@ body::before{{
     <div class="kpi-accent" style="background:linear-gradient(90deg,var(--cyan),rgba(0,212,255,0.4))"></div>
     <div class="kpi-glow" style="background:var(--cyan)"></div>
     <div class="kpi-icon">&#9776;</div>
-    <div class="kpi-val" style="color:var(--cyan)" data-counter="{D["total"]}">0</div>
+    <div class="kpi-val" style="color:var(--cyan)" data-counter="{total}">0</div>
     <div class="kpi-label">Total Casos</div>
   </div>
   <div class="kpi anim-scale d3">
@@ -412,26 +521,28 @@ body::before{{
   </div>
 </section>
 
-<!-- ====== CHARTS ====== -->
-<div class="section-title anim-up d6">Analisis de Casos por Cliente</div>
-<section class="charts-grid">
-  <div class="panel anim-up d7">
-    <div class="panel-title">Casos por Cliente</div>
-    <div class="chart-box"><canvas id="barChart"></canvas></div>
+<!-- ====== CLIENTS SECTION ====== -->
+<div class="section-title anim-up d6">Casos por Cliente <span class="section-badge">9 clientes</span></div>
+<section class="clients-layout">
+  <div class="clients-grid">
+    {client_cards_html}
   </div>
-  <div class="panel anim-up d8 donut-wrap">
+  <div class="donut-panel anim-up d8 donut-wrap">
     <div class="panel-title">Distribucion Porcentual</div>
     <div class="donut-center">
-      <div class="num" data-counter="{D["total"]}">0</div>
+      <div class="num" data-counter="{total}">0</div>
       <div class="lab">Total Casos</div>
     </div>
     <div class="chart-box"><canvas id="donutChart"></canvas></div>
   </div>
 </section>
 
+<!-- HIDDEN BAR CHART (data processing only) -->
+<div class="bar-hidden"><canvas id="barChart"></canvas></div>
+
 <!-- ====== BOTS STATUS ====== -->
 <div class="section-title anim-up d9">Estado de Bots / Flujos Automatizados</div>
-<div class="panel anim-up d10">
+<div class="panel anim-up d10" style="background:var(--card);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--border);border-radius:16px;padding:24px 28px;">
   <div class="bots-summary">
     <div class="bots-info">
       <div class="bots-count"><span style="color:var(--green)">{bots_ok}</span> / {bots_total} Exitosos</div>
@@ -458,24 +569,29 @@ body::before{{
 <!-- ====== FOOTER ====== -->
 <footer class="footer anim-up" style="animation-delay:1.1s">
   <div class="footer-line"></div>
-  NetserGroup &copy; 2026 &mdash; Humberto Henriquez
+  NetserGroup &copy; 2026
 </footer>
 
 </div><!-- /wrap -->
 
 <script>
 /* ================================================================
-   NetserGroup Dashboard v4.0 — Ultra Futuristic JS
+   NetserGroup Dashboard v5.0 — Ultimate JS
    ================================================================ */
 
-/* ---------- 1. LIVE CLOCK ---------- */
+/* Global chart variables (needed by continuous animations) */
+var barChart, donutChart, bgColors;
+
+/* ---------- 1. LIVE CLOCK WITH PULSING GLOW ---------- */
 (function clockModule() {{
   function tick() {{
     var now = new Date();
     var el = document.getElementById('clock');
-    if (el) el.textContent = now.toLocaleTimeString('es-SV', {{
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
-    }});
+    if (el) {{
+      el.textContent = now.toLocaleTimeString('es-SV', {{
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      }});
+    }}
     setTimeout(tick, 1000);
   }}
   tick();
@@ -512,7 +628,6 @@ body::before{{
     function update(now) {{
       var elapsed = now - start;
       var progress = Math.min(elapsed / duration, 1);
-      /* easeOutQuart */
       var ease = 1 - Math.pow(1 - progress, 4);
       var current = ease * target;
       el.textContent = (hasDecimal ? current.toFixed(1) : Math.round(current)) + suffix;
@@ -586,8 +701,6 @@ body::before{{
     ctx.clearRect(0, 0, W, H);
     for (var i = 0; i < particles.length; i++) {{
       var p = particles[i];
-
-      /* Mouse repulsion */
       var dmx = p.x - mouseX;
       var dmy = p.y - mouseY;
       var distMouse = Math.sqrt(dmx * dmx + dmy * dmy);
@@ -596,7 +709,6 @@ body::before{{
         p.x += (dmx / distMouse) * force;
         p.y += (dmy / distMouse) * force;
       }}
-
       p.x += p.vx;
       p.y += p.vy;
       if (p.x < 0 || p.x > W) p.vx *= -1;
@@ -604,13 +716,11 @@ body::before{{
       p.x = Math.max(0, Math.min(W, p.x));
       p.y = Math.max(0, Math.min(H, p.y));
 
-      /* Draw particle */
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(0,212,255,' + p.baseAlpha + ')';
       ctx.fill();
 
-      /* Connect nearby particles */
       for (var j = i + 1; j < particles.length; j++) {{
         var q = particles[j];
         var dx = p.x - q.x;
@@ -627,7 +737,6 @@ body::before{{
         }}
       }}
 
-      /* Connect to mouse */
       if (distMouse < CONNECT_DIST * 1.5) {{
         var mAlpha = 0.12 * (1 - distMouse / (CONNECT_DIST * 1.5));
         ctx.beginPath();
@@ -643,29 +752,35 @@ body::before{{
   draw();
 }})();
 
-/* ---------- 6. CHART.JS CHARTS ---------- */
+/* ---------- 6. CHART.JS CHARTS (with datalabels) ---------- */
 (function chartsModule() {{
+  Chart.register(ChartDataLabels);
+
   var labels = {chart_labels};
   var values = {chart_values};
-  var total = {D["total"]};
-  var colors = ['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8','#fb923c'];
-  var bgColors = labels.map(function(_, i) {{ return colors[i % colors.length] + 'CC'; }});
-  var borderColors = labels.map(function(_, i) {{ return colors[i % colors.length]; }});
+  var total = {total};
+
+  var darkColors = ['#0c4a6e','#064e3b','#78350f','#3b0764','#7f1d1d','#0e4a7a','#065f46','#831843','#312e81'];
+  var brightColors = ['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8'];
+
+  bgColors = labels.map(function(_, i) {{ return darkColors[i % darkColors.length]; }});
+  var borderCols = labels.map(function(_, i) {{ return brightColors[i % brightColors.length]; }});
+  var labelCols = labels.map(function(_, i) {{ return brightColors[i % brightColors.length]; }});
 
   Chart.defaults.color = '#94a3b8';
   Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
   Chart.defaults.font.size = 11;
 
-  /* --- BAR CHART --- */
+  /* --- BAR CHART (hidden, for data processing) --- */
   var barCtx = document.getElementById('barChart');
-  var barChart = new Chart(barCtx, {{
+  barChart = new Chart(barCtx, {{
     type: 'bar',
     data: {{
       labels: labels,
       datasets: [{{
         data: values,
         backgroundColor: bgColors,
-        borderColor: borderColors,
+        borderColor: borderCols,
         borderWidth: 1,
         borderRadius: 8,
         barPercentage: 0.7,
@@ -678,64 +793,38 @@ body::before{{
       maintainAspectRatio: false,
       animation: {{
         duration: 1500,
-        easing: 'easeOutQuart',
-        delay: function(context) {{
-          return context.dataIndex * 120;
-        }}
+        easing: 'easeOutQuart'
       }},
       plugins: {{
         legend: {{ display: false }},
-        tooltip: {{
-          backgroundColor: 'rgba(6,10,20,0.95)',
-          borderColor: 'rgba(0,212,255,0.25)',
-          borderWidth: 1,
-          cornerRadius: 10,
-          padding: 14,
-          titleFont: {{ weight: '600', size: 12 }},
-          bodyFont: {{ size: 11 }},
-          callbacks: {{
-            label: function(ctx) {{
-              var pct = total > 0 ? Math.round(ctx.parsed.x / total * 100) : 0;
-              return ctx.parsed.x + ' casos (' + pct + '%)';
-            }}
-          }}
-        }}
+        datalabels: {{ display: false }}
       }},
       scales: {{
-        x: {{
-          grid: {{ color: 'rgba(0,212,255,0.04)', lineWidth: 1 }},
-          border: {{ color: 'rgba(0,212,255,0.08)' }},
-          beginAtZero: true,
-          ticks: {{ font: {{ size: 10 }}, color: '#64748b' }}
-        }},
-        y: {{
-          grid: {{ display: false }},
-          border: {{ display: false }},
-          ticks: {{ font: {{ size: 11, weight: '500' }}, color: '#cbd5e1', padding: 8 }}
-        }}
+        x: {{ display: false }},
+        y: {{ display: false }}
       }}
     }}
   }});
 
   /* --- DONUT CHART --- */
   var donutCtx = document.getElementById('donutChart');
-  var donutChart = new Chart(donutCtx, {{
+  donutChart = new Chart(donutCtx, {{
     type: 'doughnut',
     data: {{
       labels: labels,
       datasets: [{{
         data: values,
         backgroundColor: bgColors,
-        borderColor: 'rgba(12,18,34,0.9)',
-        borderWidth: 3,
-        hoverBorderColor: borderColors,
+        borderColor: borderCols,
+        borderWidth: 2,
+        hoverBorderColor: borderCols,
         hoverOffset: 12
       }}]
     }},
     options: {{
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '62%',
+      cutout: '58%',
       animation: {{
         duration: 1500,
         easing: 'easeOutQuart',
@@ -767,30 +856,105 @@ body::before{{
               return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
             }}
           }}
+        }},
+        datalabels: {{
+          color: function(ctx) {{
+            return labelCols[ctx.dataIndex % labelCols.length];
+          }},
+          font: {{ weight: '700', size: 11 }},
+          formatter: function(value, ctx) {{
+            var pct = total > 0 ? Math.round(value / total * 100) : 0;
+            if (pct < 5) return '';
+            return value + '\\n(' + pct + '%)';
+          }},
+          textAlign: 'center',
+          anchor: 'center',
+          align: 'center',
+          offset: 0
         }}
       }}
     }}
   }});
+}})();
 
-  /* --- CROSS-CHART HOVER HIGHLIGHT --- */
-  barCtx.addEventListener('mousemove', function(e) {{
-    var activeElements = barChart.getElementsAtEventForMode(e, 'nearest', {{ intersect: true }}, false);
-    if (activeElements.length > 0) {{
-      var idx = activeElements[0].index;
-      donutChart.setActiveElements([{{ datasetIndex: 0, index: idx }}]);
-      donutChart.tooltip.setActiveElements([{{ datasetIndex: 0, index: idx }}]);
-      donutChart.update('none');
-    }} else {{
-      donutChart.setActiveElements([]);
-      donutChart.tooltip.setActiveElements([]);
+/* ---------- 7. CONTINUOUS ANIMATIONS ---------- */
+(function continuousAnimations() {{
+
+  var donutRotation = 0;
+
+  /* 7a. Donut slow continuous rotation */
+  function spinDonut() {{
+    if (donutChart) {{
+      donutRotation += 0.15;
+      donutChart.options.rotation = donutRotation;
       donutChart.update('none');
     }}
-  }});
-  barCtx.addEventListener('mouseleave', function() {{
-    donutChart.setActiveElements([]);
-    donutChart.tooltip.setActiveElements([]);
-    donutChart.update('none');
-  }});
+    requestAnimationFrame(spinDonut);
+  }}
+  requestAnimationFrame(spinDonut);
+
+  /* 7b. KPI numbers cyclic glow */
+  var kpiVals = document.querySelectorAll('.kpi-val');
+  function glowKPIs() {{
+    var t = performance.now() / 1000;
+    var intensity = 0.2 + 0.15 * Math.sin(t * 1.5);
+    kpiVals.forEach(function(el) {{
+      var color = el.style.color || '#00d4ff';
+      el.style.textShadow = '0 0 ' + Math.round(intensity * 60) + 'px ' + color;
+    }});
+    requestAnimationFrame(glowKPIs);
+  }}
+  requestAnimationFrame(glowKPIs);
+
+  /* 7c. Bot icons soft blink */
+  var botIcons = document.querySelectorAll('.bot-icon');
+  function blinkBots() {{
+    var t = performance.now() / 1000;
+    botIcons.forEach(function(el, i) {{
+      var phase = i * 0.4;
+      var opacity = 0.6 + 0.4 * Math.sin(t * 1.2 + phase);
+      el.style.opacity = opacity.toFixed(2);
+    }});
+    requestAnimationFrame(blinkBots);
+  }}
+  requestAnimationFrame(blinkBots);
+
+  /* 7d. Clock pulsing cyan glow */
+  var clockEl = document.getElementById('clock');
+  function glowClock() {{
+    if (clockEl) {{
+      var t = performance.now() / 1000;
+      var glow = 8 + 6 * Math.sin(t * 2);
+      clockEl.style.textShadow = '0 0 ' + glow.toFixed(1) + 'px rgba(0,212,255,0.4)';
+    }}
+    requestAnimationFrame(glowClock);
+  }}
+  requestAnimationFrame(glowClock);
+
+  /* 7e. Client card borders breathe */
+  var clientCards = document.querySelectorAll('.client-card');
+  function breatheCards() {{
+    var t = performance.now() / 1000;
+    var alpha = 0.1 + 0.08 * Math.sin(t * 1.0);
+    clientCards.forEach(function(card) {{
+      card.style.borderColor = 'rgba(0,212,255,' + alpha.toFixed(3) + ')';
+    }});
+    requestAnimationFrame(breatheCards);
+  }}
+  requestAnimationFrame(breatheCards);
+
+  /* 7f. Progress bar shimmer (handled via CSS animation already, but we add extra JS pulse) */
+  var progressBars = document.querySelectorAll('.client-bar-fill');
+  function shimmerBars() {{
+    var t = performance.now() / 1000;
+    var glow = 0.6 + 0.4 * Math.sin(t * 2);
+    progressBars.forEach(function(bar) {{
+      bar.style.opacity = glow.toFixed(2);
+    }});
+    requestAnimationFrame(shimmerBars);
+  }}
+  requestAnimationFrame(shimmerBars);
+
 }})();
 </script>
 </body>
@@ -800,7 +964,7 @@ body::before{{
 
 def main():
     print("=" * 56)
-    print("  NetserGroup Dashboard Generator v4.0 — Ultra Futuristic")
+    print("  NetserGroup Dashboard Generator v5.0 — Ultimate")
     print("=" * 56)
     D = read_data()
     bots_total = D['botsOK'] + D['botsFail']
