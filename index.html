@@ -6,7 +6,6 @@
 <title>NetserGroup &mdash; Centro de Operaciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 /* ====== RESET & VARS ====== */
 *{margin:0;padding:0;box-sizing:border-box}
@@ -106,7 +105,7 @@ body::before{
   border-radius:50%;filter:blur(40px);opacity:0.12;pointer-events:none;
 }
 .kpi-icon{position:absolute;top:18px;right:20px;font-size:20px;opacity:0.3}
-.kpi-val{font-size:48px;font-weight:800;line-height:1;margin-top:4px;font-variant-numeric:tabular-nums;text-shadow:0 0 20px currentColor,0 0 40px currentColor}
+.kpi-val{font-size:42px;font-weight:800;line-height:1;margin-top:4px;font-variant-numeric:tabular-nums}
 .kpi-label{
   font-size:10px;color:var(--txt3);font-weight:600;letter-spacing:1.5px;
   text-transform:uppercase;margin-top:10px;
@@ -124,21 +123,6 @@ body::before{
 }
 
 /* ====== CHART PANELS ====== */
-/* CLIENT CARDS */
-.clients-section{display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start}
-.client-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
-.client-card{background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;position:relative;overflow:hidden;transition:all .3s;cursor:default}
-.client-card:hover{border-color:var(--border-hover);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,0.3)}
-.client-card.active{border-color:var(--cyan);box-shadow:0 0 20px rgba(0,212,255,0.15)}
-.client-card-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
-.client-card-pct{position:absolute;top:8px;right:10px;font-size:10px;font-weight:600;color:var(--txt2);opacity:.7}
-.client-card-icon{font-size:22px;margin-bottom:4px;opacity:.5}
-.client-card-val{font-size:40px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
-.client-card-name{font-size:11px;color:var(--txt2);font-weight:500;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.client-card-change{font-size:11px;font-weight:600;margin-top:2px}
-.client-card-bar{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 14px 14px;transition:width 1.5s ease}
-.donut-panel{background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:14px;padding:22px;position:relative}
-
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .panel{
   background:var(--card);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
@@ -156,7 +140,7 @@ body::before{
   content:'';width:6px;height:6px;border-radius:50%;
   background:var(--cyan);box-shadow:0 0 6px var(--cyan);
 }
-.chart-box{position:relative;height:380px}
+.chart-box{position:relative;height:340px}
 .donut-wrap{position:relative}
 .donut-center{
   position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);
@@ -216,7 +200,7 @@ body::before{
   0%{background-position:200% center}
   100%{background-position:-200% center}
 }
-.bot-pill.ok .bot-icon{color:var(--green);text-shadow:0 0 12px rgba(0,245,160,0.8),0 0 24px rgba(0,245,160,0.4)}
+.bot-pill.ok .bot-icon{color:var(--green);text-shadow:0 0 10px rgba(0,245,160,0.6)}
 .bot-pill.fail .bot-icon{color:var(--red);text-shadow:0 0 10px rgba(255,107,107,0.6)}
 .bot-icon{font-size:16px;font-weight:700;width:26px;text-align:center}
 .bot-name{flex:1;font-size:12px;font-weight:500;color:var(--txt2)}
@@ -268,7 +252,6 @@ body::before{
 /* ====== RESPONSIVE ====== */
 @media(max-width:1024px){
   .kpis{grid-template-columns:repeat(2,1fr)}
-  .clients-section{grid-template-columns:1fr}
   .charts-grid{grid-template-columns:1fr}
 }
 @media(max-width:640px){
@@ -299,29 +282,16 @@ body::before{
 
 <!-- ====== HEADER ====== -->
 <header class="header anim-up d1">
-  <div style="display:flex;align-items:center;gap:16px">
-    <svg width="44" height="44" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <ellipse cx="50" cy="50" rx="45" ry="20" stroke="url(#lg1)" stroke-width="2.5" transform="rotate(-25 50 50)" opacity="0.7"/>
-      <ellipse cx="50" cy="50" rx="45" ry="20" stroke="url(#lg2)" stroke-width="2.5" transform="rotate(25 50 50)" opacity="0.5"/>
-      <circle cx="50" cy="50" r="12" fill="url(#lg3)"/>
-      <circle cx="50" cy="50" r="6" fill="#00d4ff" opacity="0.9"/>
-      <defs>
-        <linearGradient id="lg1" x1="0" y1="0" x2="100" y2="100"><stop stop-color="#00d4ff"/><stop offset="1" stop-color="#0066cc"/></linearGradient>
-        <linearGradient id="lg2" x1="100" y1="0" x2="0" y2="100"><stop stop-color="#94a3b8"/><stop offset="1" stop-color="#334155"/></linearGradient>
-        <radialGradient id="lg3" cx="50%" cy="50%"><stop stop-color="#00d4ff" stop-opacity="0.3"/><stop offset="1" stop-color="#0066cc" stop-opacity="0.1"/></radialGradient>
-      </defs>
-    </svg>
-    <div>
-      <div class="logo">NETSER<span>GROUP</span></div>
-      <div class="logo-sub" id="typingSub"></div>
-    </div>
+  <div>
+    <div class="logo">NETSER<span>GROUP</span></div>
+    <div class="logo-sub" id="typingSub"></div>
   </div>
   <div class="header-center">
     <div class="status-badge"><span class="status-dot"></span> Sistema Operativo</div>
   </div>
   <div class="header-right">
     <div class="clock" id="clock">--:--:--</div>
-    <div class="update-label">Actualizado: (25/3/2026 00:00:00)</div>
+    <div class="update-label">Actualizado: (26/3/2026 00:00:00)</div>
   </div>
 </header>
 
@@ -331,7 +301,7 @@ body::before{
     <div class="kpi-accent" style="background:linear-gradient(90deg,var(--cyan),rgba(0,212,255,0.4))"></div>
     <div class="kpi-glow" style="background:var(--cyan)"></div>
     <div class="kpi-icon">&#9776;</div>
-    <div class="kpi-val" style="color:var(--cyan)" data-counter="44">0</div>
+    <div class="kpi-val" style="color:var(--cyan)" data-counter="25">0</div>
     <div class="kpi-label">Total Casos</div>
   </div>
   <div class="kpi anim-scale d3">
@@ -358,22 +328,21 @@ body::before{
 </section>
 
 <!-- ====== CHARTS ====== -->
-<div class="section-title anim-up d6">Casos por Cliente <span style="float:right;font-size:11px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);padding:4px 14px;border-radius:20px;color:var(--cyan);font-weight:500">9 clientes</span></div>
-
-<section class="clients-section anim-up d7">
-  <div class="client-cards" id="clientCards"></div>
-  <div class="panel donut-panel">
-    <div class="panel-title">Distribucion</div>
+<div class="section-title anim-up d6">Analisis de Casos por Cliente</div>
+<section class="charts-grid">
+  <div class="panel anim-up d7">
+    <div class="panel-title">Casos por Cliente</div>
+    <div class="chart-box"><canvas id="barChart"></canvas></div>
+  </div>
+  <div class="panel anim-up d8 donut-wrap">
+    <div class="panel-title">Distribucion Porcentual</div>
     <div class="donut-center">
-      <div class="num" data-counter="44">0</div>
-      <div class="lab">Total</div>
+      <div class="num" data-counter="25">0</div>
+      <div class="lab">Total Casos</div>
     </div>
-    <div class="chart-box" style="height:320px"><canvas id="donutChart"></canvas></div>
+    <div class="chart-box"><canvas id="donutChart"></canvas></div>
   </div>
 </section>
-
-<!-- Hidden bar chart canvas (needed for data processing) -->
-<canvas id="barChart" style="display:none"></canvas>
 
 <!-- ====== BOTS STATUS ====== -->
 <div class="section-title anim-up d9">Estado de Bots / Flujos Automatizados</div>
@@ -604,60 +573,21 @@ body::before{
 })();
 
 /* ---------- 6. CHART.JS CHARTS ---------- */
-/* ---------- CLIENT CARDS ---------- */
-(function() {
-  var clients = [
-    {name:'CTDI', cases:28, icon:'&#128295;'},
-    {name:'Lenovo', cases:8, icon:'&#128187;'},
-    {name:'HP Comercial', cases:5, icon:'&#128424;'},
-    {name:'Netapp', cases:2, icon:'&#9729;'},
-    {name:'Lexmark', cases:1, icon:'&#128424;'},
-    {name:'HPE', cases:0, icon:'&#128424;'},
-    {name:'Payless', cases:0, icon:'&#128722;'},
-    {name:'Lexmark Kit', cases:0, icon:'&#128424;'},
-    {name:'Monthly Fee', cases:0, icon:'&#36;'}
-  ];
-  var total = 44;
-  var brightColors = ['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8'];
-  var container = document.getElementById('clientCards');
-  var html = '';
-  clients.forEach(function(c, i) {
-    var color = brightColors[i % brightColors.length];
-    var pct = total > 0 ? Math.round(c.cases / total * 100) : 0;
-    var barW = total > 0 ? Math.round(c.cases / 28 * 100) : 0; // max bar relative to highest
-    html += '<div class="client-card" style="animation:fadeSlideUp .5s ease ' + (0.1 + i * 0.06) + 's both">' +
-      '<div class="client-card-accent" style="background:' + color + '"></div>' +
-      (pct > 0 ? '<div class="client-card-pct" style="color:' + color + '">' + pct + '%</div>' : '') +
-      '<div class="client-card-icon">' + c.icon + '</div>' +
-      '<div class="client-card-val" style="color:' + (c.cases > 0 ? '#e2e8f0' : '#334155') + '">' + c.cases + '</div>' +
-      '<div class="client-card-name">' + c.name + '</div>' +
-      (c.cases > 0 ? '<div class="client-card-change" style="color:' + color + '">+' + c.cases + '</div>' : '<div class="client-card-change" style="color:#475569">=</div>') +
-      '<div class="client-card-bar" style="width:' + barW + '%;background:' + color + '"></div>' +
-      '</div>';
-  });
-  container.innerHTML = html;
-})();
-
-var barChart, donutChart, bgColors, borderColors, labelColors;
 (function chartsModule() {
-  var labels = ["CTDI", "Lenovo", "HP Comercial", "Netapp", "Lexmark"];
-  var values = [28, 8, 5, 2, 1];
-  var total = 44;
-  var darkColors = ['#0c4a6e','#064e3b','#78350f','#3b0764','#7f1d1d','#0e4a7a','#065f46','#831843','#312e81','#7c2d12'];
-  var brightColors = ['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8','#fb923c'];
-  bgColors = labels.map(function(_, i) { return darkColors[i % darkColors.length]; });
-  borderColors = labels.map(function(_, i) { return brightColors[i % brightColors.length]; });
-  labelColors = labels.map(function(_, i) { return brightColors[i % brightColors.length]; });
+  var labels = ["CTDI", "Lenovo"];
+  var values = [24, 1];
+  var total = 25;
+  var colors = ['#00d4ff','#00f5a0','#fbbf24','#a78bfa','#ff6b6b','#38bdf8','#34d399','#f472b6','#818cf8','#fb923c'];
+  var bgColors = labels.map(function(_, i) { return colors[i % colors.length] + 'CC'; });
+  var borderColors = labels.map(function(_, i) { return colors[i % colors.length]; });
 
-  Chart.defaults.color = '#cbd5e1';
+  Chart.defaults.color = '#94a3b8';
   Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
-  Chart.defaults.font.size = 12;
-  Chart.defaults.font.weight = 500;
-  Chart.register(ChartDataLabels);
+  Chart.defaults.font.size = 11;
 
   /* --- BAR CHART --- */
   var barCtx = document.getElementById('barChart');
-  barChart = new Chart(barCtx, {
+  var barChart = new Chart(barCtx, {
     type: 'bar',
     data: {
       labels: labels,
@@ -665,12 +595,10 @@ var barChart, donutChart, bgColors, borderColors, labelColors;
         data: values,
         backgroundColor: bgColors,
         borderColor: borderColors,
-        borderWidth: 2,
-        borderRadius: 10,
-        barPercentage: 0.75,
-        categoryPercentage: 0.85,
-        hoverBackgroundColor: borderColors,
-        hoverBorderWidth: 3
+        borderWidth: 1,
+        borderRadius: 8,
+        barPercentage: 0.7,
+        categoryPercentage: 0.85
       }]
     },
     options: {
@@ -686,22 +614,14 @@ var barChart, donutChart, bgColors, borderColors, labelColors;
       },
       plugins: {
         legend: { display: false },
-        datalabels: {
-          anchor: 'end',
-          align: 'right',
-          offset: 6,
-          color: function(ctx) { return labelColors[ctx.dataIndex % labelColors.length]; },
-          font: { size: 14, weight: '700' },
-          formatter: function(value) { return value > 0 ? value : ''; }
-        },
         tooltip: {
           backgroundColor: 'rgba(6,10,20,0.95)',
           borderColor: 'rgba(0,212,255,0.25)',
           borderWidth: 1,
           cornerRadius: 10,
           padding: 14,
-          titleFont: { weight: '600', size: 13 },
-          bodyFont: { size: 12 },
+          titleFont: { weight: '600', size: 12 },
+          bodyFont: { size: 11 },
           callbacks: {
             label: function(ctx) {
               var pct = total > 0 ? Math.round(ctx.parsed.x / total * 100) : 0;
@@ -712,15 +632,15 @@ var barChart, donutChart, bgColors, borderColors, labelColors;
       },
       scales: {
         x: {
-          grid: { color: 'rgba(0,212,255,0.08)', lineWidth: 1 },
-          border: { color: 'rgba(0,212,255,0.15)' },
+          grid: { color: 'rgba(0,212,255,0.04)', lineWidth: 1 },
+          border: { color: 'rgba(0,212,255,0.08)' },
           beginAtZero: true,
-          ticks: { font: { size: 11, weight: '500' }, color: '#94a3b8' }
+          ticks: { font: { size: 10 }, color: '#64748b' }
         },
         y: {
           grid: { display: false },
           border: { display: false },
-          ticks: { font: { size: 13, weight: '600' }, color: '#e2e8f0', padding: 10 }
+          ticks: { font: { size: 11, weight: '500' }, color: '#cbd5e1', padding: 8 }
         }
       }
     }
@@ -728,26 +648,23 @@ var barChart, donutChart, bgColors, borderColors, labelColors;
 
   /* --- DONUT CHART --- */
   var donutCtx = document.getElementById('donutChart');
-  donutChart = new Chart(donutCtx, {
+  var donutChart = new Chart(donutCtx, {
     type: 'doughnut',
     data: {
       labels: labels,
       datasets: [{
         data: values,
         backgroundColor: bgColors,
-        borderColor: borderColors,
-        borderWidth: 2,
-        hoverBackgroundColor: borderColors,
+        borderColor: 'rgba(12,18,34,0.9)',
+        borderWidth: 3,
         hoverBorderColor: borderColors,
-        hoverBorderWidth: 3,
-        hoverOffset: 18,
-        spacing: 3
+        hoverOffset: 12
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '58%',
+      cutout: '62%',
       animation: {
         duration: 1500,
         easing: 'easeOutQuart',
@@ -755,26 +672,14 @@ var barChart, donutChart, bgColors, borderColors, labelColors;
         animateScale: true
       },
       plugins: {
-        datalabels: {
-          color: function(ctx) { return labelColors[ctx.dataIndex % labelColors.length]; },
-          font: { size: 13, weight: '700' },
-          textShadowColor: 'rgba(0,0,0,0.8)',
-          textShadowBlur: 4,
-          formatter: function(value) {
-            var pct = total > 0 ? Math.round(value / total * 100) : 0;
-            return pct >= 5 ? value + '\n' + pct + '%' : '';
-          },
-          textAlign: 'center'
-        },
         legend: {
           position: 'bottom',
           labels: {
-            padding: 16,
+            padding: 14,
             usePointStyle: true,
             pointStyle: 'circle',
-            pointStyleWidth: 12,
-            font: { size: 12, weight: '600' },
-            color: '#e2e8f0'
+            font: { size: 10, weight: '500' },
+            color: '#cbd5e1'
           }
         },
         tooltip: {
@@ -815,117 +720,6 @@ var barChart, donutChart, bgColors, borderColors, labelColors;
     donutChart.tooltip.setActiveElements([]);
     donutChart.update('none');
   });
-})();
-
-/* ====== CONTINUOUS ANIMATIONS ====== */
-
-// 1. DONUT ROTATION — gira lento constantemente
-(function() {
-  var rotation = 0;
-  function spinDonut() {
-    rotation += 0.15;
-    donutChart.options.rotation = rotation;
-    donutChart.update('none');
-    requestAnimationFrame(spinDonut);
-  }
-  // Start after initial animation completes
-  setTimeout(spinDonut, 2000);
-})();
-
-// 2. BAR PULSE — barras pulsan suavemente
-(function() {
-  var phase = 0;
-  function pulsBars() {
-    phase += 0.03;
-    var newBg = bgColors.map(function(baseColor, i) {
-      var pulse = 0.7 + 0.3 * Math.sin(phase + i * 0.8);
-      return adjustAlpha(baseColor, pulse);
-    });
-    barChart.data.datasets[0].backgroundColor = newBg;
-    barChart.update('none');
-    requestAnimationFrame(pulsBars);
-  }
-  function adjustAlpha(hex, alpha) {
-    var r = parseInt(hex.slice(1,3), 16);
-    var g = parseInt(hex.slice(3,5), 16);
-    var b = parseInt(hex.slice(5,7), 16);
-    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
-  }
-  setTimeout(pulsBars, 2000);
-})();
-
-// 3. KPI GLOW PULSE — numeros brillan ciclicamente
-(function() {
-  var kpiVals = document.querySelectorAll('.kpi-val');
-  var phase = 0;
-  function glowKpis() {
-    phase += 0.02;
-    kpiVals.forEach(function(el, i) {
-      var intensity = 15 + 15 * Math.sin(phase + i * 1.2);
-      var intensity2 = 30 + 20 * Math.sin(phase + i * 1.2);
-      el.style.textShadow = '0 0 ' + intensity + 'px currentColor, 0 0 ' + intensity2 + 'px currentColor';
-    });
-    requestAnimationFrame(glowKpis);
-  }
-  glowKpis();
-})();
-
-// 4. PROGRESS BAR SHIMMER — brillo que recorre la barra
-(function() {
-  var bar = document.querySelector('.progress-fill');
-  if (!bar) return;
-  var shimmer = document.createElement('div');
-  shimmer.style.cssText = 'position:absolute;top:0;left:-30%;width:30%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);animation:shimmerSlide 2s ease-in-out infinite;border-radius:inherit;';
-  bar.style.position = 'relative';
-  bar.style.overflow = 'hidden';
-  bar.appendChild(shimmer);
-  var style = document.createElement('style');
-  style.textContent = '@keyframes shimmerSlide{0%{left:-30%}100%{left:100%}}';
-  document.head.appendChild(style);
-})();
-
-// 5. BOT PILLS — status icons parpadean suavemente
-(function() {
-  var icons = document.querySelectorAll('.bot-icon');
-  var phase = 0;
-  function blinkIcons() {
-    phase += 0.04;
-    icons.forEach(function(el, i) {
-      var opacity = 0.6 + 0.4 * Math.sin(phase + i * 0.5);
-      el.style.opacity = opacity;
-    });
-    requestAnimationFrame(blinkIcons);
-  }
-  blinkIcons();
-})();
-
-// 6. HEADER CLOCK GLOW — reloj pulsa suavemente
-(function() {
-  var clock = document.querySelector('.clock');
-  if (!clock) return;
-  var phase = 0;
-  function glowClock() {
-    phase += 0.03;
-    var g = 8 + 6 * Math.sin(phase);
-    clock.style.textShadow = '0 0 ' + g + 'px rgba(0,212,255,0.5)';
-    requestAnimationFrame(glowClock);
-  }
-  glowClock();
-})();
-
-// 7. CARD BORDERS — bordes de panels respiran
-(function() {
-  var panels = document.querySelectorAll('.panel, .kpi');
-  var phase = 0;
-  function breatheBorders() {
-    phase += 0.015;
-    panels.forEach(function(el, i) {
-      var alpha = 0.08 + 0.12 * Math.sin(phase + i * 0.6);
-      el.style.borderColor = 'rgba(0,212,255,' + alpha.toFixed(3) + ')';
-    });
-    requestAnimationFrame(breatheBorders);
-  }
-  breatheBorders();
 })();
 </script>
 </body>
