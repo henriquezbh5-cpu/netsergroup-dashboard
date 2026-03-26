@@ -8,7 +8,11 @@ echo   NetserGroup Dashboard - Actualizando
 echo ========================================
 echo.
 
-echo [1/4] Generando dashboard desde Excel...
+echo [1/5] Actualizando historico de datos (CSV para Power BI)...
+python historico_datos.py
+echo.
+
+echo [2/5] Generando dashboard web desde Excel...
 python generar_dashboard.py
 if %errorlevel% neq 0 (
     echo ERROR: Fallo al generar dashboard. Verifica que Python y openpyxl esten instalados.
@@ -17,7 +21,7 @@ if %errorlevel% neq 0 (
 )
 echo.
 
-echo [2/4] Preparando Git...
+echo [3/5] Preparando Git...
 git status >nul 2>&1
 if %errorlevel% neq 0 (
     echo Inicializando repositorio Git...
@@ -26,12 +30,12 @@ if %errorlevel% neq 0 (
 )
 echo.
 
-echo [3/4] Agregando archivos y creando commit...
-git add index.html generar_dashboard.py ACTUALIZAR_DASHBOARD.bat
+echo [4/5] Agregando archivos y creando commit...
+git add index.html generar_dashboard.py historico_datos.py ACTUALIZAR_DASHBOARD.bat historico_casos.csv historico_bots.csv
 git commit -m "Dashboard actualizado %date% %time%"
 echo.
 
-echo [4/4] Subiendo a GitHub...
+echo [5/5] Subiendo a GitHub...
 git pull --rebase origin main 2>nul
 git push -u origin main 2>&1
 
@@ -49,5 +53,8 @@ echo ========================================
 echo   Listo! Espera 30-60 segundos y
 echo   recarga con Ctrl+F5
 echo ========================================
+echo.
+echo Power BI: Abre NetserDashboard.pbip y dale Refresh
+echo Los CSVs historicos se actualizan automaticamente
 echo.
 pause
